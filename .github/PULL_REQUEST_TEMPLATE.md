@@ -4,6 +4,7 @@
 
 **Plugin name:** `your-plugin-name`
 **Description:** Brief description of what your plugin does
+**What problem does it solve?** Explain the use case
 
 ### Checklist
 
@@ -13,3 +14,9 @@
 - [ ] Entry added to `.claude-plugin/marketplace.json`
 - [ ] Plugin name is kebab-case and matches directory name
 - [ ] No security issues (no data exfiltration, no dangerous operations)
+
+### Testing
+
+- [ ] Validated with `/plugin-development:validate`
+- [ ] Tested locally with `/plugin-development:test-local`
+- [ ] All commands work as documented

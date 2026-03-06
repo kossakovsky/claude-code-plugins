@@ -9,15 +9,27 @@ Create, modify, and improve Claude Code skills. Originally from [anthropics/skil
 /plugin install skill-creator@claude-code-plugins
 ```
 
-## What It Does
+## Usage
 
-The skill-creator activates automatically when you want to create or improve a Claude Code skill. It guides you through:
+The skill-creator is a **skill resource** (not a slash command). It activates automatically when you ask Claude Code to create or improve a skill:
 
-1. **Capturing intent** -- understanding what the skill should do and when it should trigger
-2. **Writing the SKILL.md** -- structured guidance on frontmatter, progressive disclosure, and writing patterns
-3. **Testing** -- running eval test cases with and without the skill
-4. **Iterating** -- improving based on feedback until the skill works well
-5. **Description optimization** -- tuning triggering accuracy
+```
+"Create a skill that generates unit tests for Python code"
+"Improve my debugging skill to handle async errors better"
+"I want to make a skill for code review"
+```
+
+Once activated, the skill guides you through an interactive workflow -- you describe your idea in plain text, and Claude Code handles the structure.
+
+## Workflow
+
+1. **Capture intent** -- Claude interviews you to understand what the skill should do and when it should trigger
+2. **Write SKILL.md** -- generates the skill file with proper frontmatter, progressive disclosure, and writing patterns
+3. **Test** -- runs eval test cases with and without the skill to measure effectiveness
+4. **Iterate** -- improves the skill based on test results until it performs well
+5. **Optimize description** -- tunes the trigger description for accurate activation
+
+Advanced features include blind A/B comparison between skill versions and benchmark tracking across iterations.
 
 ## Included
 

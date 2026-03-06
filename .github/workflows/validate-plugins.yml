@@ -105,6 +105,14 @@ jobs:
               exit 1
             fi
 
+            # Validate SemVer format in marketplace entry
+            mp_version=$(jq -r ".plugins[$i].version" .claude-plugin/marketplace.json)
+            if ! echo "$mp_version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+              echo "✗ Plugin entry $((i+1)): version '$mp_version' is not valid SemVer (expected X.Y.Z)"
+              exit 1
+            fi
+            echo "✓ Plugin entry $((i+1)): version '$mp_version' is valid SemVer"
+
             # Validate source path format
             source=$(jq -r ".plugins[$i].source" .claude-plugin/marketplace.json)
             if ! echo "$source" | grep -qE '^\./plugins/[a-z0-9-]+$'; then
@@ -202,6 +210,14 @@ jobs:
             fi
             echo "✓ Plugin name matches directory name"
 
+            # Cross-validate: marketplace.json name must match plugin.json name
+            marketplace_name=$(jq -r --arg src "$plugin_path" '.plugins[] | select(.source == $src) | .name' .claude-plugin/marketplace.json)
+            if [ -n "$marketplace_name" ] && [ "$marketplace_name" != "$plugin_name_val" ]; then
+              echo "✗ Marketplace name '$marketplace_name' does not match plugin.json name '$plugin_name_val'"
+              exit 1
+            fi
+            echo "✓ Marketplace name matches plugin.json name"
+
             # Check version field
             if ! jq -e ".version" "$plugin_json" > /dev/null; then
               echo "✗ Missing required field: version"
@@ -209,8 +225,15 @@ jobs:
             fi
             echo "✓ Required field 'version' present"
 
-            # Cross-validate: marketplace.json version must match plugin.json version
+            # Validate SemVer format
             plugin_version=$(jq -r ".version" "$plugin_json")
+            if ! echo "$plugin_version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+              echo "✗ Version '$plugin_version' is not valid SemVer (expected X.Y.Z)"
+              exit 1
+            fi
+            echo "✓ Version '$plugin_version' is valid SemVer"
+
+            # Cross-validate: marketplace.json version must match plugin.json version
             marketplace_version=$(jq -r --arg src "$plugin_path" '.plugins[] | select(.source == $src) | .version' .claude-plugin/marketplace.json)
             if [ -n "$marketplace_version" ] && [ "$marketplace_version" != "$plugin_version" ]; then
               echo "✗ Marketplace version '$marketplace_version' does not match plugin.json version '$plugin_version'"

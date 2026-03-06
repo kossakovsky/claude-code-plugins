@@ -16,13 +16,13 @@
         "name": "kossakovsky"
       },
       "source": "./plugins/switch-provider",
-      "category": "utilities",
+      "category": "ai-tools",
       "tags": ["provider", "api", "configuration"],
       "keywords": ["provider", "switch", "api", "zai", "kimi", "minimax"]
     },
     {
       "name": "plugin-development",
-      "description": "Assist with Claude Code plugin development: scaffold, validate, review, and team-ready distribution",
+      "description": "A comprehensive toolkit for creating, validating, and distributing Claude Code plugins",
       "version": "1.3.0",
       "author": {
         "name": "kossakovsky"

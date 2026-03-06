@@ -60,11 +60,9 @@ Once installed, you can scaffold a new plugin:
 This scaffolds:
 - `.claude-plugin/plugin.json` - Plugin manifest
 - `commands/` - Slash commands directory
-- `agents/` - Sub-agents directory
-- `skills/` - Skills directory
-- `hooks/hooks.json` - Hook configuration
-- `scripts/` - Validation scripts
 - `README.md` - Documentation template
+
+Additional directories (`skills/`, `agents/`, `hooks/`, `scripts/`) are created on demand when you add components via `/plugin-development:add-skill`, `/plugin-development:add-agent`, or `/plugin-development:add-hook`.
 
 ### Add Components
 

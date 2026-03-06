@@ -111,9 +111,6 @@ If validation fails, provide clear feedback.
 ---
 description: $2
 argument-hint: [arg1] [arg2]
-allowed-tools: Write, Edit
-model: claude-3-5-haiku-20241022
-disable-model-invocation: false
 ---
 
 # $1 Command
@@ -380,5 +377,5 @@ After creating a command:
 □ Command name is kebab-case
 □ Instructions are clear and specific
 □ Examples provided
-□ plugin.json has commands field
+□ plugin.json has commands field (only if using custom paths)
 ```

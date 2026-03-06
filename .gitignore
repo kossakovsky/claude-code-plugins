@@ -1,3 +1,6 @@
+# Dev marketplace (created by /plugin-development:test-local)
+dev-marketplace/
+
 # Claude Code
 .claude/settings.local.json
 .claude/cache/
