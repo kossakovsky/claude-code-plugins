@@ -13,9 +13,7 @@ Show the current AI provider configuration.
 2. **Determine current provider** by checking `env.ANTHROPIC_BASE_URL`:
    - Not set or missing → **Anthropic** (native)
    - Contains `z.ai` → **Z.AI**
-   - Contains `deepseek` → **DeepSeek**
    - Contains `moonshot` → **Kimi**
-   - Contains `aliyuncs` → **Qwen**
    - Contains `minimax` → **MiniMax**
    - Other → **Custom** (show the URL)
 
