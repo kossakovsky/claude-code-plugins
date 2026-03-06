@@ -160,13 +160,35 @@ jobs:
             fi
             echo "✓ plugin.json is valid JSON"
 
-            # Check required fields (only 'name' is required)
+            # Check required fields
             if ! jq -e ".name" "$plugin_json" > /dev/null; then
               echo "✗ Missing required field: name"
               exit 1
             fi
             echo "✓ Required field 'name' present"
-            
+
+            # Validate kebab-case naming
+            plugin_name_val=$(jq -r ".name" "$plugin_json")
+            if ! echo "$plugin_name_val" | grep -qE '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'; then
+              echo "✗ Plugin name '$plugin_name_val' must be kebab-case (lowercase letters, numbers, hyphens)"
+              exit 1
+            fi
+            echo "✓ Plugin name '$plugin_name_val' is valid kebab-case"
+
+            # Check version field
+            if ! jq -e ".version" "$plugin_json" > /dev/null; then
+              echo "✗ Missing required field: version"
+              exit 1
+            fi
+            echo "✓ Required field 'version' present"
+
+            # Check description field
+            if ! jq -e ".description" "$plugin_json" > /dev/null; then
+              echo "✗ Missing required field: description"
+              exit 1
+            fi
+            echo "✓ Required field 'description' present"
+
             # Check optional but recommended fields
             if jq -e ".author" "$plugin_json" > /dev/null; then
               # If author exists, check it's an object
@@ -213,6 +235,13 @@ jobs:
                     echo "✓ Command '$cmd_name' has frontmatter"
                   else
                     echo "⚠️  Warning: Command '$cmd_name' missing frontmatter (recommended)"
+                  fi
+
+                  # Check if frontmatter contains description
+                  if head -n 10 "$cmd_file" | grep -q "^description:"; then
+                    echo "✓ Command '$cmd_name' has description in frontmatter"
+                  else
+                    echo "⚠️  Warning: Command '$cmd_name' missing 'description' in frontmatter (recommended)"
                   fi
                 done
               fi
