@@ -67,16 +67,26 @@ Required fields: `name`, `source`, `description`, `version`. The `name` must mat
 4. Ensure your plugin has a `README.md`
 5. Open a Pull Request
 
+**Or automate everything:** Install the `plugin-development` plugin and run `/plugin-development:submit` — it handles forking, branching, copying files, updating marketplace.json, and creating the PR for you.
+
 ### Local Validation
 
-Before submitting, verify your plugin passes validation:
+Before submitting, validate your plugin using the `plugin-development` plugin:
 
 ```bash
-# Validate plugin structure
-plugins/plugin-development/scripts/validate-plugin.sh
+# Install the plugin-development plugin
+/plugin install plugin-development@claude-code-plugins
+
+# Validate your plugin structure
+/plugin-development:validate
 ```
 
-You can also use the `plugin-development` plugin to scaffold and validate your plugin interactively.
+Or check marketplace JSON validity manually:
+
+```bash
+# Requires jq
+jq empty .claude-plugin/marketplace.json && echo "Valid JSON"
+```
 
 ### PR Requirements
 
@@ -85,6 +95,18 @@ You can also use the `plugin-development` plugin to scaffold and validate your p
 - Plugin name is kebab-case and matches directory name
 - `README.md` exists and describes installation and usage
 - CI validation passes (`validate-plugins.yml`)
+
+### Categories
+
+Choose a category for your plugin when adding it to `marketplace.json`:
+
+| Category | Description |
+|----------|-------------|
+| `utilities` | General-purpose tools and helpers |
+| `developer-tools` | Plugin development, code generation, git workflows |
+| `productivity` | Workflow automation, task management |
+| `ai-tools` | AI-related features, model switching, prompt tools |
+| `integrations` | External service integrations |
 
 ### Security Restrictions
 

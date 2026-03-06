@@ -125,7 +125,7 @@ This checks:
 1. Check `hooks` field in `plugin.json` points to correct path
 2. Verify `hooks.json` is valid JSON
 3. Make scripts executable: `chmod +x scripts/*.sh`
-4. Test script directly: `./scripts/validate-plugin.sh`
+4. Verify hook config in `hooks/hooks.json` matches expected events
 5. Use `claude --debug` to see hook execution
 
 ### Skills Not Triggering

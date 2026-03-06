@@ -1,3 +1,5 @@
+> Tip: You can automate this entire process with `/plugin-development:submit`
+
 ## Plugin Submission
 
 **Plugin name:** `your-plugin-name`

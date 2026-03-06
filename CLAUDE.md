@@ -20,9 +20,10 @@ CI runs on push to main/develop and on PRs to main (`.github/workflows/validate-
 
 Local validation for plugin development:
 ```bash
-# Validate plugin structure (used by plugin-development hook on Write/Edit)
-plugins/plugin-development/scripts/validate-plugin.sh
+/plugin-development:validate
 ```
+
+Note: `plugins/plugin-development/scripts/validate-plugin.sh` is a hook script invoked automatically on Write/Edit — it cannot be run standalone.
 
 PR review is automated via Claude Code Action (`.github/workflows/review-pr.yml`).
 
@@ -48,10 +49,10 @@ Optional component directories:
 
 | Plugin | Purpose |
 |--------|---------|
-| `switch-provider` | Switch between AI providers (Anthropic, Z.AI, Kimi, MiniMax) |
-| `plugin-development` | Scaffold, validate, and review plugins |
-| `commit` | Smart git commits with conventional commit messages |
-| `skill-creator` | Create skills with evals and benchmarks |
+| `switch-provider` | Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command |
+| `plugin-development` | Scaffold, validate, review, and submit Claude Code plugins |
+| `commit` | Smart git commits with conventional commit message generation |
+| `skill-creator` | Create, improve, and measure skills with evals and benchmarks |
 
 ## PR Review Instructions
 

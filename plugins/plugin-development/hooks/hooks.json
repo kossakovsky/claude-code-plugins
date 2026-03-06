@@ -1,5 +1,5 @@
 {
-  "description": "Auto-validate basic plugin structure and format code after edits",
+  "description": "Auto-validate basic plugin structure before edits",
   "hooks": {
     "PreToolUse": [
       {

@@ -7,7 +7,7 @@ A comprehensive Claude Code plugin that assists developers in creating, validati
 The `plugin-development` plugin provides a complete toolkit for plugin authorship using a hybrid architecture:
 
 - **Skill (plugin-authoring)**: Ambient, auto-discovered guidance with progressive disclosure
-- **7 Slash Commands**: Explicit actions for scaffolding, validation, and testing
+- **8 Slash Commands**: Explicit actions for scaffolding, validation, testing, and submission
 - **Reviewer Agent**: Deep, multi-file audits and readiness checks
 - **Hooks**: Automated validation and formatting guardrails
 
@@ -117,6 +117,7 @@ This creates a dev marketplace and provides installation instructions for iterat
 | `/plugin-development:add-hook [event] [matcher]` | Add a hook configuration |
 | `/plugin-development:validate` | Validate plugin structure and configuration |
 | `/plugin-development:test-local` | Create dev marketplace for local testing |
+| `/plugin-development:submit [plugin-path]` | Submit a plugin to the community marketplace via PR |
 
 ## Skill: plugin-authoring
 
@@ -160,9 +161,6 @@ Automated validation and formatting hooks are included:
 - Validates plugin structure before Write/Edit operations
 - Exit code 2 blocks unsafe operations
 - Provides actionable error messages
-
-### PostToolUse
-- Runs formatting/linting after Write/Edit (stub, extend as needed)
 
 ### SessionStart
 - Displays plugin load confirmation
@@ -246,9 +244,15 @@ After making changes:
 
 Fix any critical or high-priority issues identified.
 
-### 7. Distribute
+### 7. Submit
 
-Add to your team marketplace repository and push to GitHub.
+Submit your plugin to the community marketplace:
+
+```bash
+/plugin-development:submit
+```
+
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for manual submission instructions.
 
 ## Documentation
 
@@ -354,7 +358,7 @@ For enhanced security, configure in `.claude/settings.json`:
 ### Hooks not running?
 - Make scripts executable: `chmod +x scripts/*.sh`
 - Use `${CLAUDE_PLUGIN_ROOT}` in hook commands
-- Test script directly: `./scripts/validate-plugin.sh`
+- Verify hook config in `hooks/hooks.json` matches expected events
 - Use `claude --debug` to see hook execution
 
 ## Contributing
@@ -374,10 +378,10 @@ To extend:
 ## Resources
 
 ### Official Documentation
-- [Claude Code Plugins](https://docs.claude.com/en/docs/claude-code/plugins)
-- [Plugin Marketplaces](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces)
-- [Plugins Reference](https://docs.claude.com/en/docs/claude-code/plugins-reference)
-- [Slash Commands](https://docs.claude.com/en/docs/claude-code/slash-commands)
+- [Claude Code Plugins](https://docs.anthropic.com/en/docs/claude-code/plugins)
+- [Plugin Marketplaces](https://docs.anthropic.com/en/docs/claude-code/plugin-marketplaces)
+- [Plugins Reference](https://docs.anthropic.com/en/docs/claude-code/plugins-reference)
+- [Slash Commands](https://docs.anthropic.com/en/docs/claude-code/slash-commands)
 
 ### Local Documentation
 See `skills/plugin-authoring/` for:

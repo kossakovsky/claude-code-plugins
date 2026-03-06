@@ -37,16 +37,14 @@ If validation fails, explain the requirements and ask for a valid name.
 
 ### Create Directory Structure
 
-Create these directories:
+Create these directories by default:
 ```
 $1/
 ├── .claude-plugin/
-├── commands/
-├── agents/
-├── skills/
-├── hooks/
-└── scripts/
+└── commands/
 ```
+
+Only create additional directories (`skills/`, `agents/`, `hooks/`, `scripts/`) when the user adds corresponding components via `/plugin-development:add-skill`, `/plugin-development:add-agent`, or `/plugin-development:add-hook`. Do not create empty directories.
 
 ### Create plugin.json
 
@@ -63,17 +61,6 @@ Create `.claude-plugin/plugin.json` with this template:
   },
   "license": "MIT",
   "keywords": ["keyword1", "keyword2"]
-}
-```
-
-### Create hooks.json
-
-Create `hooks/hooks.json` with a basic structure:
-
-```json
-{
-  "description": "Plugin hooks",
-  "hooks": {}
 }
 ```
 
@@ -100,21 +87,6 @@ Create `README.md` with this template:
 
 [Provide examples]
 ```
-
-### Create Validation Script
-
-Create `scripts/validate-plugin.sh` with executable permissions:
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Basic plugin structure validation
-[ -f ".claude-plugin/plugin.json" ] || { echo "Missing plugin.json" >&2; exit 2; }
-exit 0
-```
-
-Make it executable: `chmod +x scripts/validate-plugin.sh`
 
 ## Next Steps
 

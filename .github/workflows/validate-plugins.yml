@@ -105,6 +105,14 @@ jobs:
               exit 1
             fi
 
+            # Validate source path format
+            source=$(jq -r ".plugins[$i].source" .claude-plugin/marketplace.json)
+            if ! echo "$source" | grep -qE '^\./plugins/[a-z0-9-]+$'; then
+              echo "✗ Plugin entry $((i+1)): source '$source' must match pattern ./plugins/<kebab-case-name>"
+              exit 1
+            fi
+            echo "✓ Plugin entry $((i+1)): source path format is valid"
+
             # Check author format if present
             if jq -e ".plugins[$i].author" .claude-plugin/marketplace.json > /dev/null; then
               if ! jq -e ".plugins[$i].author | type == \"object\"" .claude-plugin/marketplace.json > /dev/null; then
@@ -200,6 +208,15 @@ jobs:
               exit 1
             fi
             echo "✓ Required field 'version' present"
+
+            # Cross-validate: marketplace.json version must match plugin.json version
+            plugin_version=$(jq -r ".version" "$plugin_json")
+            marketplace_version=$(jq -r --arg src "$plugin_path" '.plugins[] | select(.source == $src) | .version' .claude-plugin/marketplace.json)
+            if [ -n "$marketplace_version" ] && [ "$marketplace_version" != "$plugin_version" ]; then
+              echo "✗ Marketplace version '$marketplace_version' does not match plugin.json version '$plugin_version'"
+              exit 1
+            fi
+            echo "✓ Marketplace version matches plugin.json version"
 
             # Check description field
             if ! jq -e ".description" "$plugin_json" > /dev/null; then

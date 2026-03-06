@@ -46,7 +46,7 @@
     },
     {
       "name": "skill-creator",
-      "description": "Create new skills, modify and improve existing skills, and measure skill performance with evals and benchmarks",
+      "description": "Create new skills, modify and improve existing skills, and measure skill performance with evals and benchmarks. Originally from anthropics/skills, community-maintained",
       "version": "1.0.0",
       "author": {
         "name": "anthropics"
