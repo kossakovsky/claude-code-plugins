@@ -13,45 +13,30 @@ The `plugin-development` plugin provides a complete toolkit for plugin authorshi
 
 ## Installation
 
-This plugin is part of the **Claude Code Plugin Marketplace Template**. To use it:
+This plugin is part of the **claude-code-plugins** community marketplace.
 
-### Quick Start (Recommended for First-Time Users)
+### From GitHub
 
 ```bash
-# From the template root directory
+# Add the marketplace
+/plugin marketplace add kossakovsky/claude-code-plugins
+
+# Install the plugin
+/plugin install plugin-development@claude-code-plugins
+```
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/kossakovsky/claude-code-plugins.git
+cd claude-code-plugins
+
+# Add local marketplace
 /plugin marketplace add .
 
 # Install the plugin
-/plugin install plugin-development@claude-code-plugin-template
-```
-
-### For Team Marketplaces
-
-If you're using this template to create your own marketplace:
-
-1. **Set up your marketplace** (see the [main README](../../README.md) for instructions)
-2. **Add your marketplace to Claude Code**:
-   ```bash
-   /plugin marketplace add your-org/your-marketplace-repo
-   ```
-3. **Install the plugin**:
-   ```bash
-   /plugin install plugin-development@your-marketplace-name
-   ```
-
-### Local Development Setup
-
-If you want to use this for developing new plugins:
-
-```bash
-# From the template root directory
-cd /path/to/claude-code-plugin-template
-
-# Add the marketplace
-/plugin marketplace add .
-
-# Install this plugin
-/plugin install plugin-development@claude-code-plugin-template
+/plugin install plugin-development@claude-code-plugins
 ```
 
 Then use it to scaffold new plugins:
@@ -190,8 +175,8 @@ Before starting plugin development:
 
 1. **Clone or download this template**:
    ```bash
-   git clone https://github.com/your-org/claude-code-plugin-template.git
-   cd claude-code-plugin-template
+   git clone https://github.com/kossakovsky/claude-code-plugins.git
+   cd claude-code-plugins
    ```
 
 2. **Install this plugin** (see [Installation](#installation) above)

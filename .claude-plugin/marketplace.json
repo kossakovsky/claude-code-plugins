@@ -1,32 +1,31 @@
 {
-  "name": "my-team-plugin-marketplace",
+  "name": "claude-code-plugins",
   "owner": {
-    "name": "Your Organization",
-    "email": "team@your-org.com"
+    "name": "kossakovsky"
   },
   "metadata": {
-    "description": "A curated collection of Claude Code plugins for our team",
-    "version": "1.3.0"
+    "description": "Community marketplace of plugins for Claude Code",
+    "version": "1.0.0"
   },
   "plugins": [
     {
-      "name": "hello-world",
-      "description": "A simple example plugin demonstrating basic Claude Code plugin functionality",
+      "name": "switch-provider",
+      "description": "Switch Claude Code between AI providers (Anthropic, zAI, DeepSeek, Kimi, Qwen, MiniMax) with a single command",
       "version": "1.0.0",
       "author": {
-        "name": "Your Team"
+        "name": "kossakovsky"
       },
-      "source": "./plugins/hello-world",
-      "category": "examples",
-      "tags": ["example", "tutorial", "getting-started"],
-      "keywords": ["example", "tutorial", "getting-started"]
+      "source": "./plugins/switch-provider",
+      "category": "utilities",
+      "tags": ["provider", "api", "configuration", "openrouter"],
+      "keywords": ["provider", "switch", "api", "xai", "deepseek", "kimi", "qwen", "minimax"]
     },
     {
       "name": "plugin-development",
       "description": "Assist with Claude Code plugin development: scaffold, validate, review, and team-ready distribution",
       "version": "1.3.0",
       "author": {
-        "name": "Ivan Magda"
+        "name": "kossakovsky"
       },
       "source": "./plugins/plugin-development",
       "category": "developer-tools",
