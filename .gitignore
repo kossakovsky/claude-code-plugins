@@ -1,4 +1,5 @@
 # Claude Code
+.claude/settings.local.json
 .claude/cache/
 .claude/logs/
 .claude/temp/

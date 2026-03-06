@@ -17,7 +17,7 @@
       },
       "source": "./plugins/switch-provider",
       "category": "utilities",
-      "tags": ["provider", "api", "configuration", "openrouter"],
+      "tags": ["provider", "api", "configuration"],
       "keywords": ["provider", "switch", "api", "xai", "deepseek", "kimi", "qwen", "minimax"]
     },
     {
