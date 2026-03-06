@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "switch-provider",
-      "description": "Switch Claude Code between AI providers (Anthropic, zAI, DeepSeek, Kimi, Qwen, MiniMax) with a single command",
+      "description": "Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command",
       "version": "1.0.0",
       "author": {
         "name": "kossakovsky"
@@ -18,7 +18,7 @@
       "source": "./plugins/switch-provider",
       "category": "utilities",
       "tags": ["provider", "api", "configuration"],
-      "keywords": ["provider", "switch", "api", "xai", "deepseek", "kimi", "qwen", "minimax"]
+      "keywords": ["provider", "switch", "api", "zai", "kimi", "minimax"]
     },
     {
       "name": "plugin-development",
@@ -31,6 +31,30 @@
       "category": "developer-tools",
       "tags": ["development", "plugins", "scaffold", "validation", "tools"],
       "keywords": ["claude-code", "plugins", "developer-tools", "scaffold", "validation"]
+    },
+    {
+      "name": "commit",
+      "description": "Smart git commits with conventional commit message generation",
+      "version": "1.0.0",
+      "author": {
+        "name": "kossakovsky"
+      },
+      "source": "./plugins/commit",
+      "category": "developer-tools",
+      "tags": ["git", "commits", "conventional-commits"],
+      "keywords": ["git", "commit", "conventional", "changelog"]
+    },
+    {
+      "name": "skill-creator",
+      "description": "Create new skills, modify and improve existing skills, and measure skill performance with evals and benchmarks",
+      "version": "1.0.0",
+      "author": {
+        "name": "anthropics"
+      },
+      "source": "./plugins/skill-creator",
+      "category": "developer-tools",
+      "tags": ["skills", "creator", "evals", "development"],
+      "keywords": ["skills", "creator", "evals", "development"]
     }
   ]
 }

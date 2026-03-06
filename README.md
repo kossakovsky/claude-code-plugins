@@ -18,8 +18,10 @@ Then install any plugin:
 
 | Plugin | Description |
 |--------|-------------|
-| [switch-provider](plugins/switch-provider/) | Switch Claude Code between AI providers (Anthropic, zAI, DeepSeek, Kimi, Qwen, MiniMax) with a single command |
+| [switch-provider](plugins/switch-provider/) | Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command |
 | [plugin-development](plugins/plugin-development/) | Toolkit for creating, validating, and distributing Claude Code plugins |
+| [commit](plugins/commit/) | Smart git commits with conventional commit message generation |
+| [skill-creator](plugins/skill-creator/) | Create, test, and improve Claude Code skills with evals and benchmarks |
 
 ## Contributing
 

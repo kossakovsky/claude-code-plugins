@@ -1,0 +1,8 @@
+{
+  "name": "skill-creator",
+  "version": "1.0.0",
+  "description": "Create new skills, modify and improve existing skills, and measure skill performance with evals and benchmarks",
+  "author": { "name": "anthropics" },
+  "license": "MIT",
+  "keywords": ["skills", "creator", "evals", "development"]
+}

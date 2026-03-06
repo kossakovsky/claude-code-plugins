@@ -1,0 +1,8 @@
+{
+  "name": "commit",
+  "version": "1.0.0",
+  "description": "Smart git commits with conventional commit message generation",
+  "author": { "name": "kossakovsky" },
+  "license": "MIT",
+  "keywords": ["git", "commit", "conventional-commits"]
+}
