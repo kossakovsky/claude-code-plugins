@@ -392,17 +392,14 @@ MIT License - See LICENSE file for details
 
 ## Version
 
-**1.0.0** - Initial release
+**1.3.0**
 
-### Features
-- ✅ Plugin scaffolding (init command)
-- ✅ Component generation (add-command, add-skill, add-agent, add-hook)
-- ✅ Validation (validate command)
-- ✅ Local testing (test-local command)
-- ✅ Ambient guidance (plugin-authoring skill)
-- ✅ Deep review (plugin-reviewer agent)
-- ✅ Automated safety (validation hooks)
-- ✅ Comprehensive documentation (schemas, templates, examples, best practices)
+### Changelog
+
+- **1.3.0** - Streamlined hooks, removed stub format-or-lint script, improved validation
+- **1.2.0** - Added plugin-reviewer agent, enhanced skill guidance, added best practices docs
+- **1.1.0** - Added add-skill, add-agent, add-hook commands, test-local workflow
+- **1.0.0** - Initial release with init, add-command, validate commands, plugin-authoring skill
 
 ## Support
 
