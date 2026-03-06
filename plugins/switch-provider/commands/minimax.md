@@ -10,9 +10,10 @@ Switch Claude Code to use MiniMax as the AI provider.
 ## Provider Config
 
 - **ANTHROPIC_BASE_URL**: `https://api.minimax.io/anthropic`
-- **CLAUDE_CODE_MAX_MODEL**: `MiniMax-M2.1`
-- **CLAUDE_CODE_DEFAULT_MODEL**: `MiniMax-M2.1`
-- **CLAUDE_CODE_MINI_MODEL**: `MiniMax-M2.1`
+- **ANTHROPIC_DEFAULT_OPUS_MODEL**: `MiniMax-M2.5`
+- **ANTHROPIC_DEFAULT_SONNET_MODEL**: `MiniMax-M2.5`
+- **ANTHROPIC_DEFAULT_HAIKU_MODEL**: `MiniMax-M2.5`
+- **ANTHROPIC_SMALL_FAST_MODEL**: `MiniMax-M2.5`
 
 ## Steps
 
@@ -29,9 +30,10 @@ Switch Claude Code to use MiniMax as the AI provider.
    {
      "ANTHROPIC_AUTH_TOKEN": "<resolved-api-key>",
      "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
-     "CLAUDE_CODE_MAX_MODEL": "MiniMax-M2.1",
-     "CLAUDE_CODE_DEFAULT_MODEL": "MiniMax-M2.1",
-     "CLAUDE_CODE_MINI_MODEL": "MiniMax-M2.1"
+     "ANTHROPIC_DEFAULT_OPUS_MODEL": "MiniMax-M2.5",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL": "MiniMax-M2.5",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "MiniMax-M2.5",
+     "ANTHROPIC_SMALL_FAST_MODEL": "MiniMax-M2.5"
    }
    ```
 

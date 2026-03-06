@@ -10,9 +10,10 @@ Switch Claude Code to use Z.AI as the AI provider.
 ## Provider Config
 
 - **ANTHROPIC_BASE_URL**: `https://api.z.ai/api/anthropic`
-- **CLAUDE_CODE_MAX_MODEL**: `glm-4.7`
-- **CLAUDE_CODE_DEFAULT_MODEL**: `glm-4.7`
-- **CLAUDE_CODE_MINI_MODEL**: `glm-4.5-air`
+- **ANTHROPIC_DEFAULT_OPUS_MODEL**: `glm-5`
+- **ANTHROPIC_DEFAULT_SONNET_MODEL**: `glm-4.7`
+- **ANTHROPIC_DEFAULT_HAIKU_MODEL**: `glm-4.5-air`
+- **ANTHROPIC_SMALL_FAST_MODEL**: `glm-4.5-air`
 
 ## Steps
 
@@ -29,9 +30,10 @@ Switch Claude Code to use Z.AI as the AI provider.
    {
      "ANTHROPIC_AUTH_TOKEN": "<resolved-api-key>",
      "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-     "CLAUDE_CODE_MAX_MODEL": "glm-4.7",
-     "CLAUDE_CODE_DEFAULT_MODEL": "glm-4.7",
-     "CLAUDE_CODE_MINI_MODEL": "glm-4.5-air"
+     "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
+     "ANTHROPIC_SMALL_FAST_MODEL": "glm-4.5-air"
    }
    ```
 

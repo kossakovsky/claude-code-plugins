@@ -10,9 +10,10 @@ Switch Claude Code to use Kimi (Moonshot) as the AI provider.
 ## Provider Config
 
 - **ANTHROPIC_BASE_URL**: `https://api.moonshot.cn/anthropic`
-- **CLAUDE_CODE_MAX_MODEL**: `moonshot-v1-auto`
-- **CLAUDE_CODE_DEFAULT_MODEL**: `moonshot-v1-auto`
-- **CLAUDE_CODE_MINI_MODEL**: `moonshot-v1-auto`
+- **ANTHROPIC_DEFAULT_OPUS_MODEL**: `kimi-k2.5`
+- **ANTHROPIC_DEFAULT_SONNET_MODEL**: `kimi-k2.5`
+- **ANTHROPIC_DEFAULT_HAIKU_MODEL**: `kimi-k2.5`
+- **ANTHROPIC_SMALL_FAST_MODEL**: `kimi-k2.5`
 
 ## Steps
 
@@ -29,9 +30,10 @@ Switch Claude Code to use Kimi (Moonshot) as the AI provider.
    {
      "ANTHROPIC_AUTH_TOKEN": "<resolved-api-key>",
      "ANTHROPIC_BASE_URL": "https://api.moonshot.cn/anthropic",
-     "CLAUDE_CODE_MAX_MODEL": "moonshot-v1-auto",
-     "CLAUDE_CODE_DEFAULT_MODEL": "moonshot-v1-auto",
-     "CLAUDE_CODE_MINI_MODEL": "moonshot-v1-auto"
+     "ANTHROPIC_DEFAULT_OPUS_MODEL": "kimi-k2.5",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL": "kimi-k2.5",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k2.5",
+     "ANTHROPIC_SMALL_FAST_MODEL": "kimi-k2.5"
    }
    ```
 

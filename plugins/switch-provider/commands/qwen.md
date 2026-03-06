@@ -10,9 +10,10 @@ Switch Claude Code to use Qwen (Alibaba) as the AI provider.
 ## Provider Config
 
 - **ANTHROPIC_BASE_URL**: `https://dashscope.aliyuncs.com/compatible-mode/v1`
-- **CLAUDE_CODE_MAX_MODEL**: `qwen-max`
-- **CLAUDE_CODE_DEFAULT_MODEL**: `qwen-plus`
-- **CLAUDE_CODE_MINI_MODEL**: `qwen-turbo`
+- **ANTHROPIC_DEFAULT_OPUS_MODEL**: `qwen3-max`
+- **ANTHROPIC_DEFAULT_SONNET_MODEL**: `qwen3.5-plus`
+- **ANTHROPIC_DEFAULT_HAIKU_MODEL**: `qwen-turbo`
+- **ANTHROPIC_SMALL_FAST_MODEL**: `qwen-turbo`
 
 ## Steps
 
@@ -29,9 +30,10 @@ Switch Claude Code to use Qwen (Alibaba) as the AI provider.
    {
      "ANTHROPIC_AUTH_TOKEN": "<resolved-api-key>",
      "ANTHROPIC_BASE_URL": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-     "CLAUDE_CODE_MAX_MODEL": "qwen-max",
-     "CLAUDE_CODE_DEFAULT_MODEL": "qwen-plus",
-     "CLAUDE_CODE_MINI_MODEL": "qwen-turbo"
+     "ANTHROPIC_DEFAULT_OPUS_MODEL": "qwen3-max",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL": "qwen3.5-plus",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "qwen-turbo",
+     "ANTHROPIC_SMALL_FAST_MODEL": "qwen-turbo"
    }
    ```
 

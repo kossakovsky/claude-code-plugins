@@ -10,9 +10,10 @@ Switch Claude Code to use DeepSeek as the AI provider.
 ## Provider Config
 
 - **ANTHROPIC_BASE_URL**: `https://api.deepseek.com/v1`
-- **CLAUDE_CODE_MAX_MODEL**: `deepseek-chat`
-- **CLAUDE_CODE_DEFAULT_MODEL**: `deepseek-chat`
-- **CLAUDE_CODE_MINI_MODEL**: `deepseek-chat`
+- **ANTHROPIC_DEFAULT_OPUS_MODEL**: `deepseek-chat`
+- **ANTHROPIC_DEFAULT_SONNET_MODEL**: `deepseek-chat`
+- **ANTHROPIC_DEFAULT_HAIKU_MODEL**: `deepseek-chat`
+- **ANTHROPIC_SMALL_FAST_MODEL**: `deepseek-chat`
 
 ## Steps
 
@@ -29,9 +30,10 @@ Switch Claude Code to use DeepSeek as the AI provider.
    {
      "ANTHROPIC_AUTH_TOKEN": "<resolved-api-key>",
      "ANTHROPIC_BASE_URL": "https://api.deepseek.com/v1",
-     "CLAUDE_CODE_MAX_MODEL": "deepseek-chat",
-     "CLAUDE_CODE_DEFAULT_MODEL": "deepseek-chat",
-     "CLAUDE_CODE_MINI_MODEL": "deepseek-chat"
+     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-chat",
+     "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-chat",
+     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-chat",
+     "ANTHROPIC_SMALL_FAST_MODEL": "deepseek-chat"
    }
    ```
 

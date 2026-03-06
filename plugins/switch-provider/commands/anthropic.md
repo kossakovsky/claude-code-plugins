@@ -13,8 +13,9 @@ Switch Claude Code back to the native Anthropic API by removing provider environ
 3. Remove the following keys from the `env` section (if they exist):
    - `ANTHROPIC_AUTH_TOKEN`
    - `ANTHROPIC_BASE_URL`
-   - `CLAUDE_CODE_MAX_MODEL`
-   - `CLAUDE_CODE_DEFAULT_MODEL`
-   - `CLAUDE_CODE_MINI_MODEL`
+   - `ANTHROPIC_DEFAULT_OPUS_MODEL`
+   - `ANTHROPIC_DEFAULT_SONNET_MODEL`
+   - `ANTHROPIC_DEFAULT_HAIKU_MODEL`
+   - `ANTHROPIC_SMALL_FAST_MODEL`
 4. Write the updated settings back to `~/.claude/settings.json`
 5. Confirm the switch and tell the user: **Restart Claude Code to apply changes.**
