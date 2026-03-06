@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   review:
     name: Claude Code Review
@@ -21,3 +25,12 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Review this PR as a plugin marketplace submission. Check:
+            1. Plugin structure: plugins/<name>/ with .claude-plugin/plugin.json and README.md
+            2. plugin.json: valid JSON with name (kebab-case, matches directory), version, description
+            3. marketplace.json: entry added with correct source path, no duplicates
+            4. Security: no data exfiltration, no dangerous operations, no obfuscated code
+            5. Usefulness: solves a real problem, not spam or empty shell
+
+            Respond with: APPROVE, NEEDS_CHANGES (list specifics), or BLOCK (critical security issues).

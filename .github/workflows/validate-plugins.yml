@@ -63,6 +63,7 @@ jobs:
 
   validate-marketplace-plugins:
     name: Validate Marketplace Plugin Entries
+    needs: validate-structure
     runs-on: ubuntu-latest
 
     steps:
@@ -93,7 +94,17 @@ jobs:
               echo "✗ Plugin entry $((i+1)): Missing required field 'source'"
               exit 1
             fi
-            
+
+            if ! jq -e ".plugins[$i].description" .claude-plugin/marketplace.json > /dev/null; then
+              echo "✗ Plugin entry $((i+1)): Missing required field 'description'"
+              exit 1
+            fi
+
+            if ! jq -e ".plugins[$i].version" .claude-plugin/marketplace.json > /dev/null; then
+              echo "✗ Plugin entry $((i+1)): Missing required field 'version'"
+              exit 1
+            fi
+
             # Check author format if present
             if jq -e ".plugins[$i].author" .claude-plugin/marketplace.json > /dev/null; then
               if ! jq -e ".plugins[$i].author | type == \"object\"" .claude-plugin/marketplace.json > /dev/null; then
@@ -116,6 +127,7 @@ jobs:
 
   validate-plugins:
     name: Validate Individual Plugins
+    needs: validate-structure
     runs-on: ubuntu-latest
 
     steps:
@@ -175,6 +187,13 @@ jobs:
             fi
             echo "✓ Plugin name '$plugin_name_val' is valid kebab-case"
 
+            # Cross-validate: plugin.json name must match directory name
+            if [ "$plugin_name_val" != "$plugin_name" ]; then
+              echo "✗ Plugin name '$plugin_name_val' in plugin.json does not match directory name '$plugin_name'"
+              exit 1
+            fi
+            echo "✓ Plugin name matches directory name"
+
             # Check version field
             if ! jq -e ".version" "$plugin_json" > /dev/null; then
               echo "✗ Missing required field: version"
@@ -212,12 +231,12 @@ jobs:
               echo "✓ Field 'repository' is properly formatted"
             fi
 
-            # Check README exists
+            # Check README exists (required)
             if [ ! -f "$plugin_path/README.md" ]; then
-              echo "⚠️  Warning: README.md not found (recommended)"
-            else
-              echo "✓ README.md exists"
+              echo "✗ README.md not found (required)"
+              exit 1
             fi
+            echo "✓ README.md exists"
             
             # Check commands directory and validate command files
             if [ -d "$plugin_path/commands" ]; then
@@ -256,6 +275,7 @@ jobs:
 
   check-duplicates:
     name: Check for Duplicate Plugin Names
+    needs: validate-structure
     runs-on: ubuntu-latest
 
     steps:

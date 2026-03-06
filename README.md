@@ -1,14 +1,19 @@
 # Claude Code Community Marketplace
 
-Community marketplace of plugins for [Claude Code](https://claude.com/claude-code).
+[![Validate Plugins](https://github.com/kossakovsky/claude-code-plugins/actions/workflows/validate-plugins.yml/badge.svg)](https://github.com/kossakovsky/claude-code-plugins/actions/workflows/validate-plugins.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+Community marketplace of plugins for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Skills, commands, hooks, and agents — all installable with a single command.
 
 ## Installation
+
+Add the marketplace:
 
 ```bash
 /plugin marketplace add kossakovsky/claude-code-plugins
 ```
 
-Then install any plugin:
+Install any plugin:
 
 ```bash
 /plugin install <plugin-name>@claude-code-plugins
@@ -23,9 +28,11 @@ Then install any plugin:
 | [commit](plugins/commit/) | Smart git commits with conventional commit message generation |
 | [skill-creator](plugins/skill-creator/) | Create, test, and improve Claude Code skills with evals and benchmarks |
 
-## Contributing
+## Create Your Own Plugin
 
-We welcome community plugins! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to submit your plugin.
+Anyone can contribute a plugin to the marketplace via Pull Request. Every PR goes through automated CI validation and a Claude Code review before being merged.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, or use the `plugin-development` plugin to scaffold your plugin interactively.
 
 ## License
 

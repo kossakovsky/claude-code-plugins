@@ -30,7 +30,7 @@ PR review is automated via Claude Code Action (`.github/workflows/review-pr.yml`
 
 ### Marketplace Registry
 
-`.claude-plugin/marketplace.json` — central registry listing all plugins. Each entry requires: `name`, `source` (relative path like `./plugins/<name>`), `description`, `version`, `author.name`.
+`.claude-plugin/marketplace.json` — central registry listing all plugins. Each entry requires: `name`, `source` (relative path like `./plugins/<name>`), `description`, `version`. Optional: `author.name`, `category`, `tags`, `keywords`.
 
 ### Plugin Structure
 
@@ -60,7 +60,7 @@ When reviewing a PR, check the following:
 ### Required Checks
 
 1. **Plugin structure**: directory `plugins/<name>/` contains `.claude-plugin/plugin.json` and `README.md`
-2. **plugin.json**: valid JSON with required fields (`name`, `version`, `description`, `author`)
+2. **plugin.json**: valid JSON with required fields (`name`, `version`, `description`)
 3. **marketplace.json**: entry added with correct `source` path, no duplicate names
 4. **Security**: commands and hooks contain no malicious code, no data exfiltration, no dangerous operations
 5. **Usefulness**: plugin solves a real problem, is not spam or an empty shell
