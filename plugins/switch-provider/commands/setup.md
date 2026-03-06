@@ -12,8 +12,8 @@ Configure and save API keys for providers to `~/.claude/provider-keys.json`.
 1. **Read** existing keys from `~/.claude/provider-keys.json` if the file exists (use Read tool, handle file not found gracefully)
 
 2. **Determine which provider to configure**:
-   - If an argument was provided (e.g., `deepseek`), configure that provider
-   - If no argument, ask the user which provider(s) they want to configure. Options: `zai`, `deepseek`, `kimi`, `qwen`, `minimax`
+   - If an argument was provided (e.g., `zai`), configure that provider
+   - If no argument, ask the user which provider(s) they want to configure. Options: `zai`, `kimi`, `minimax`
 
 3. **For each provider to configure**:
    - Ask the user for their API key
@@ -23,9 +23,7 @@ Configure and save API keys for providers to `~/.claude/provider-keys.json`.
    ```json
    {
      "zai": "key-here",
-     "deepseek": "sk-key-here",
      "kimi": "sk-key-here",
-     "qwen": "sk-key-here",
      "minimax": "key-here"
    }
    ```

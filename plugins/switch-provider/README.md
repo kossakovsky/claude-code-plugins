@@ -1,6 +1,6 @@
 # switch-provider
 
-Switch Claude Code between AI providers with a single command.
+Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command.
 
 ## Installation
 
@@ -16,16 +16,14 @@ Switch to a provider:
 ```bash
 /switch-provider:anthropic          # Switch back to native Anthropic
 /switch-provider:zai                # Switch to Z.AI
-/switch-provider:deepseek           # Switch to DeepSeek
 /switch-provider:kimi               # Switch to Kimi (Moonshot)
-/switch-provider:qwen               # Switch to Qwen (Alibaba)
 /switch-provider:minimax            # Switch to MiniMax
 ```
 
 Optionally pass API key as argument:
 
 ```bash
-/switch-provider:deepseek sk-your-api-key
+/switch-provider:zai your-api-key
 ```
 
 Utility commands:
@@ -39,11 +37,9 @@ Utility commands:
 
 | Provider | Base URL | Models |
 |----------|----------|--------|
-| Anthropic | native | claude-sonnet-4-20250514 |
+| Anthropic | native | default (claude-opus-4-6, claude-sonnet-4-6, etc.) |
 | Z.AI | `https://api.z.ai/api/anthropic` | glm-5 / glm-4.7 / glm-4.5-air |
-| DeepSeek | `https://api.deepseek.com/v1` | deepseek-chat |
 | Kimi | `https://api.moonshot.cn/anthropic` | kimi-k2.5 |
-| Qwen | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen3-max / qwen3.5-plus / qwen-turbo |
 | MiniMax | `https://api.minimax.io/anthropic` | MiniMax-M2.5 |
 
 ## How It Works

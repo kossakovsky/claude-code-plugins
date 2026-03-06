@@ -4,5 +4,5 @@
   "description": "Switch Claude Code between AI providers with a single command",
   "author": { "name": "kossakovsky" },
   "license": "MIT",
-  "keywords": ["provider", "switch", "api", "zai", "deepseek", "kimi", "qwen", "minimax"]
+  "keywords": ["provider", "switch", "api", "zai", "kimi", "minimax"]
 }
