@@ -4,5 +4,7 @@
   "description": "Smart git commits with conventional commit message generation",
   "author": { "name": "kossakovsky" },
   "license": "MIT",
-  "keywords": ["git", "commit", "conventional-commits"]
+  "homepage": "https://github.com/kossakovsky/cc-plugins",
+  "repository": "https://github.com/kossakovsky/cc-plugins",
+  "keywords": ["git", "commit", "conventional-commits", "changelog"]
 }

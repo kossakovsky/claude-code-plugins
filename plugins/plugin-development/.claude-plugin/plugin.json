@@ -9,10 +9,13 @@
   "repository": "https://github.com/kossakovsky/cc-plugins",
   "license": "MIT",
   "keywords": [
+    "claude-code",
+    "plugins",
+    "developer-tools",
     "plugin-development",
     "plugin-authoring",
-    "cli-tools",
-    "validation",
-    "scaffolding"
+    "scaffold",
+    "scaffolding",
+    "validation"
   ]
 }

@@ -30,7 +30,7 @@
       "source": "./plugins/plugin-development",
       "category": "developer-tools",
       "tags": ["development", "plugins", "scaffold", "validation", "tools"],
-      "keywords": ["claude-code", "plugins", "developer-tools", "scaffold", "validation"]
+      "keywords": ["claude-code", "plugins", "developer-tools", "plugin-development", "plugin-authoring", "scaffold", "scaffolding", "validation"]
     },
     {
       "name": "commit",
@@ -42,7 +42,7 @@
       "source": "./plugins/commit",
       "category": "developer-tools",
       "tags": ["git", "commits", "conventional-commits"],
-      "keywords": ["git", "commit", "conventional", "changelog"]
+      "keywords": ["git", "commit", "conventional-commits", "changelog"]
     },
     {
       "name": "skill-creator",
