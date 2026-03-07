@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Community marketplace of plugins for Claude Code. Plugins are installed via:
 ```
-/plugin marketplace add kossakovsky/claude-code-plugins
-/plugin install <plugin-name>@claude-code-plugins
+/plugin marketplace add kossakovsky/cc-plugins
+/plugin install <plugin-name>@cc-plugins
 ```
 
 ## Validation
@@ -25,7 +25,7 @@ Local validation for plugin development:
 
 Note: `plugins/plugin-development/scripts/validate-plugin.sh` is a hook script invoked automatically on Write/Edit — it cannot be run standalone.
 
-PR review is automated via Claude Code Action (`.github/workflows/review-pr.yml`).
+PR review is automated via Claude Code GitHub App (auto-reviews all PRs using instructions below).
 
 ## Architecture
 
@@ -56,19 +56,37 @@ Optional component directories:
 
 ## PR Review Instructions
 
-When reviewing a PR, check the following:
+When reviewing a PR, evaluate against these 4 categories (score each 1-5):
 
-### Required Checks
+### 1. Structure (blocking if < 3)
+- `plugins/<name>/` directory exists
+- `.claude-plugin/plugin.json` with `name` (kebab-case, matches directory), `version`, `description`
+- `README.md` present with installation and usage sections
 
-1. **Plugin structure**: directory `plugins/<name>/` contains `.claude-plugin/plugin.json` and `README.md`
-2. **plugin.json**: valid JSON with required fields (`name`, `version`, `description`)
-3. **marketplace.json**: entry added with correct `source` path, no duplicate names
-4. **Security**: commands and hooks contain no malicious code, no data exfiltration, no dangerous operations
-5. **Usefulness**: plugin solves a real problem, is not spam or an empty shell
+### 2. Marketplace Integration (blocking if < 3)
+- Entry added to `marketplace.json` with correct `source` path
+- No duplicate plugin names
+- Category and tags present
+
+### 3. Security (blocking if < 4)
+- No data exfiltration patterns (sending files, env vars, secrets to external services)
+- No dangerous/destructive operations without user confirmation
+- No obfuscated or minified code that hides functionality
+- No hardcoded secrets or API keys
+
+### 4. Quality & Usefulness (blocking if < 2)
+- Solves a real problem, not spam or empty shell
+- Commands/skills have meaningful content
+- Documentation is clear and accurate
 
 ### Response Format
 
-Use one of these statuses:
-- **APPROVE** — everything looks good, ready to merge
-- **NEEDS_CHANGES** — issues found, changes required (list specifics)
-- **BLOCK** — critical security issues or structural violations
+**Score:** Structure X/5 | Integration X/5 | Security X/5 | Quality X/5
+**Total:** XX/20
+
+**Verdict:**
+- **APPROVE** (16+) — everything looks good, ready to merge
+- **NEEDS_CHANGES** (10-15) — issues found, list specifics
+- **BLOCK** (<10 or any blocking criteria failed) — critical issues
+
+**Details:** specific findings per category
