@@ -150,6 +150,23 @@ jobs:
             fi
             echo "✓ Plugin entry $((i+1)): Field 'tags' is a non-empty array"
 
+            # Validate category against allowed values
+            valid_categories="utilities developer-tools productivity ai-tools integrations"
+            category=$(jq -r ".plugins[$i].category" .claude-plugin/marketplace.json)
+            if ! echo "$valid_categories" | grep -qw "$category"; then
+              echo "✗ Plugin entry $((i+1)): Invalid category '$category'. Must be one of: $valid_categories"
+              exit 1
+            fi
+            echo "✓ Plugin entry $((i+1)): Category '$category' is valid"
+
+            # Check keywords field (required, must be non-empty array)
+            if ! jq -e ".plugins[$i].keywords | type == \"array\" and length > 0" .claude-plugin/marketplace.json > /dev/null; then
+              plugin_name_tmp=$(jq -r ".plugins[$i].name" .claude-plugin/marketplace.json)
+              echo "✗ Plugin entry '$plugin_name_tmp': Field 'keywords' must be a non-empty array"
+              exit 1
+            fi
+            echo "✓ Plugin entry $((i+1)): Field 'keywords' is a non-empty array"
+
             plugin_name=$(jq -r ".plugins[$i].name" .claude-plugin/marketplace.json)
             echo "✓ Marketplace entry for '$plugin_name' is valid"
           done
