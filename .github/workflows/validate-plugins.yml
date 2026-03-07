@@ -134,6 +134,22 @@ jobs:
               echo "✓ Plugin entry $((i+1)): Field 'author' is properly formatted"
             fi
             
+            # Check category field (required for community marketplace)
+            if ! jq -e ".plugins[$i].category" .claude-plugin/marketplace.json > /dev/null; then
+              plugin_name_tmp=$(jq -r ".plugins[$i].name" .claude-plugin/marketplace.json)
+              echo "✗ Plugin entry '$plugin_name_tmp': Missing required field 'category'"
+              exit 1
+            fi
+            echo "✓ Plugin entry $((i+1)): Field 'category' present"
+
+            # Check tags field (required, must be non-empty array)
+            if ! jq -e ".plugins[$i].tags | type == \"array\" and length > 0" .claude-plugin/marketplace.json > /dev/null; then
+              plugin_name_tmp=$(jq -r ".plugins[$i].name" .claude-plugin/marketplace.json)
+              echo "✗ Plugin entry '$plugin_name_tmp': Field 'tags' must be a non-empty array"
+              exit 1
+            fi
+            echo "✓ Plugin entry $((i+1)): Field 'tags' is a non-empty array"
+
             plugin_name=$(jq -r ".plugins[$i].name" .claude-plugin/marketplace.json)
             echo "✓ Marketplace entry for '$plugin_name' is valid"
           done
@@ -304,6 +320,17 @@ jobs:
                   fi
                 done
               fi
+            fi
+
+            # Cross-validate keywords between plugin.json and marketplace.json
+            plugin_keywords=$(jq -r '(.keywords // []) | sort | join(",")' "$plugin_json")
+            marketplace_keywords=$(jq -r --arg src "$plugin_path" '.plugins[] | select(.source == $src) | (.keywords // []) | sort | join(",")' .claude-plugin/marketplace.json)
+            if [ -n "$plugin_keywords" ] && [ -n "$marketplace_keywords" ] && [ "$plugin_keywords" != "$marketplace_keywords" ]; then
+              echo "⚠️  Warning: Keywords mismatch between plugin.json and marketplace.json for '$plugin_name'"
+              echo "    plugin.json:      $plugin_keywords"
+              echo "    marketplace.json: $marketplace_keywords"
+            else
+              echo "✓ Keywords are consistent between plugin.json and marketplace.json"
             fi
 
             echo "✓ Plugin $plugin_name is valid"
