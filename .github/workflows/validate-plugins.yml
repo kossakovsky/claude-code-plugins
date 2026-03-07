@@ -264,6 +264,18 @@ jobs:
             fi
             echo "✓ Required field 'description' present"
 
+            # Cross-validate: marketplace.json description must match plugin.json description
+            plugin_description=$(jq -r ".description" "$plugin_json")
+            marketplace_description=$(jq -r --arg src "$plugin_path" \
+              '.plugins[] | select(.source == $src) | .description' .claude-plugin/marketplace.json)
+            if [ -n "$marketplace_description" ] && [ "$marketplace_description" != "$plugin_description" ]; then
+              echo "✗ Description mismatch for '$plugin_name'"
+              echo "    plugin.json:      $plugin_description"
+              echo "    marketplace.json: $marketplace_description"
+              exit 1
+            fi
+            echo "✓ Marketplace description matches plugin.json description"
+
             # Check optional but recommended fields
             if jq -e ".author" "$plugin_json" > /dev/null; then
               # If author exists, check it's an object

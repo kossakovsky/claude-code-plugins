@@ -37,6 +37,7 @@ Optional but recommended:
   "version": "1.0.0",
   "description": "What your plugin does",
   "author": { "name": "your-github-username" },
+  "keywords": ["keyword1", "keyword2"],
   "license": "MIT"
 }
 ```
@@ -53,7 +54,8 @@ Add your plugin to the `plugins` array in `.claude-plugin/marketplace.json`:
   "source": "./plugins/your-plugin",
   "author": { "name": "your-github-username" },
   "category": "utilities",
-  "tags": ["tag1", "tag2"]
+  "tags": ["tag1", "tag2"],
+  "keywords": ["keyword1", "keyword2"]
 }
 ```
 
