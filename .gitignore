@@ -1,5 +1,6 @@
 # Dev marketplace (created by /plugin-development:test-local)
 dev-marketplace/
+SETUP_AND_TESTING.md
 
 # Claude Code
 .claude/settings.local.json
