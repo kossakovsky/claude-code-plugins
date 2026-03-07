@@ -5,7 +5,7 @@ argument-hint: [plugin-path]
 
 # Submit Plugin to Marketplace
 
-Guide the user through submitting their plugin to the community marketplace (`kossakovsky/claude-code-plugins`).
+Guide the user through submitting their plugin to the community marketplace (`kossakovsky/cc-plugins`).
 
 ## Arguments
 
@@ -70,16 +70,16 @@ Ask the user for confirmation before each step.
 
 1. **Fork the repository:**
    ```bash
-   gh repo fork kossakovsky/claude-code-plugins --clone=true
+   gh repo fork kossakovsky/cc-plugins --clone=true
    ```
    If already forked, clone the existing fork:
    ```bash
-   gh repo clone <user>/claude-code-plugins
+   gh repo clone <user>/cc-plugins
    ```
 
 2. **Create a branch:**
    ```bash
-   cd claude-code-plugins
+   cd cc-plugins
    git checkout -b add-plugin/<plugin-name>
    ```
 
@@ -100,7 +100,7 @@ Ask the user for confirmation before each step.
 6. **Create Pull Request:**
    ```bash
    gh pr create \
-     --repo kossakovsky/claude-code-plugins \
+     --repo kossakovsky/cc-plugins \
      --title "feat: add <plugin-name> plugin" \
      --body "$(cat <<'EOF'
    ## Plugin Submission
@@ -132,11 +132,11 @@ Provide clear step-by-step instructions:
 ```
 To submit your plugin to the marketplace:
 
-1. Fork: https://github.com/kossakovsky/claude-code-plugins
+1. Fork: https://github.com/kossakovsky/cc-plugins
 
 2. Clone your fork:
-   git clone https://github.com/<your-username>/claude-code-plugins
-   cd claude-code-plugins
+   git clone https://github.com/<your-username>/cc-plugins
+   cd cc-plugins
 
 3. Create a branch:
    git checkout -b add-plugin/<plugin-name>
@@ -153,7 +153,7 @@ To submit your plugin to the marketplace:
    git push -u origin add-plugin/<plugin-name>
 
 7. Open a Pull Request:
-   https://github.com/kossakovsky/claude-code-plugins/compare
+   https://github.com/kossakovsky/cc-plugins/compare
 
    Use the PR template to fill in your submission details.
 ```

@@ -13,30 +13,30 @@ The `plugin-development` plugin provides a complete toolkit for plugin authorshi
 
 ## Installation
 
-This plugin is part of the **claude-code-plugins** community marketplace.
+This plugin is part of the **cc-plugins** community marketplace.
 
 ### From GitHub
 
 ```bash
 # Add the marketplace
-/plugin marketplace add kossakovsky/claude-code-plugins
+/plugin marketplace add kossakovsky/cc-plugins
 
 # Install the plugin
-/plugin install plugin-development@claude-code-plugins
+/plugin install plugin-development@cc-plugins
 ```
 
 ### Local Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/kossakovsky/claude-code-plugins.git
-cd claude-code-plugins
+git clone https://github.com/kossakovsky/cc-plugins.git
+cd cc-plugins
 
 # Add local marketplace
 /plugin marketplace add .
 
 # Install the plugin
-/plugin install plugin-development@claude-code-plugins
+/plugin install plugin-development@cc-plugins
 ```
 
 Then use it to scaffold new plugins:
@@ -171,8 +171,8 @@ Before starting plugin development:
 
 1. **Clone or download this template**:
    ```bash
-   git clone https://github.com/kossakovsky/claude-code-plugins.git
-   cd claude-code-plugins
+   git clone https://github.com/kossakovsky/cc-plugins.git
+   cd cc-plugins
    ```
 
 2. **Install this plugin** (see [Installation](#installation) above)

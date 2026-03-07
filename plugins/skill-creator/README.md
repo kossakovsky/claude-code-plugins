@@ -5,8 +5,8 @@ Create, modify, and improve Claude Code skills. Originally from [anthropics/skil
 ## Installation
 
 ```bash
-/plugin marketplace add kossakovsky/claude-code-plugins
-/plugin install skill-creator@claude-code-plugins
+/plugin marketplace add kossakovsky/cc-plugins
+/plugin install skill-creator@cc-plugins
 ```
 
 ## Usage

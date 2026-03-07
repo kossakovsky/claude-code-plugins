@@ -1,6 +1,6 @@
 # Claude Code Community Marketplace
 
-[![Validate Plugins](https://github.com/kossakovsky/claude-code-plugins/actions/workflows/validate-plugins.yml/badge.svg)](https://github.com/kossakovsky/claude-code-plugins/actions/workflows/validate-plugins.yml)
+[![Validate Plugins](https://github.com/kossakovsky/cc-plugins/actions/workflows/validate-plugins.yml/badge.svg)](https://github.com/kossakovsky/cc-plugins/actions/workflows/validate-plugins.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Community marketplace of plugins for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Claude Code plugins extend your CLI with new skills, slash commands, hooks, and agents. This marketplace is a single place where the community shares and discovers plugins — all installable with one command.
@@ -21,13 +21,13 @@ Each plugin is a folder with a manifest and one or more of these components. No 
 Add the marketplace:
 
 ```bash
-/plugin marketplace add kossakovsky/claude-code-plugins
+/plugin marketplace add kossakovsky/cc-plugins
 ```
 
 Install any plugin:
 
 ```bash
-/plugin install <plugin-name>@claude-code-plugins
+/plugin install <plugin-name>@cc-plugins
 ```
 
 ## Plugins
@@ -47,7 +47,7 @@ The fastest way to create and submit a plugin:
 
 ```bash
 # Install the plugin-development toolkit
-/plugin install plugin-development@claude-code-plugins
+/plugin install plugin-development@cc-plugins
 
 # Scaffold a new plugin
 /plugin-development:init my-plugin

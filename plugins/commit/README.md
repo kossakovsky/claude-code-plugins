@@ -5,8 +5,8 @@ Smart git commits with conventional commit message generation.
 ## Installation
 
 ```bash
-/plugin marketplace add kossakovsky/claude-code-plugins
-/plugin install commit@claude-code-plugins
+/plugin marketplace add kossakovsky/cc-plugins
+/plugin install commit@cc-plugins
 ```
 
 ## Usage

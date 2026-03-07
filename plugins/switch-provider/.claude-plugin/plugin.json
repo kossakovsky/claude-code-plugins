@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command",
   "author": { "name": "kossakovsky" },
-  "homepage": "https://github.com/kossakovsky/claude-code-plugins",
-  "repository": "https://github.com/kossakovsky/claude-code-plugins",
+  "homepage": "https://github.com/kossakovsky/cc-plugins",
+  "repository": "https://github.com/kossakovsky/cc-plugins",
   "license": "MIT",
   "keywords": ["provider", "switch", "api", "zai", "kimi", "minimax"]
 }

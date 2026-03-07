@@ -5,8 +5,8 @@ Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a 
 ## Installation
 
 ```bash
-/plugin marketplace add kossakovsky/claude-code-plugins
-/plugin install switch-provider@claude-code-plugins
+/plugin marketplace add kossakovsky/cc-plugins
+/plugin install switch-provider@cc-plugins
 ```
 
 ## Usage

@@ -5,8 +5,8 @@
   "author": {
     "name": "kossakovsky"
   },
-  "homepage": "https://github.com/kossakovsky/claude-code-plugins",
-  "repository": "https://github.com/kossakovsky/claude-code-plugins",
+  "homepage": "https://github.com/kossakovsky/cc-plugins",
+  "repository": "https://github.com/kossakovsky/cc-plugins",
   "license": "MIT",
   "keywords": [
     "plugin-development",

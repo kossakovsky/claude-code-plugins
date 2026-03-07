@@ -75,7 +75,7 @@ Before submitting, validate your plugin using the `plugin-development` plugin:
 
 ```bash
 # Install the plugin-development plugin
-/plugin install plugin-development@claude-code-plugins
+/plugin install plugin-development@cc-plugins
 
 # Validate your plugin structure
 /plugin-development:validate
