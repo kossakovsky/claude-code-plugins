@@ -14,7 +14,7 @@ At a high level, the process of creating a skill goes like this:
 - Create a few test prompts and run claude-with-access-to-the-skill on them
 - Help the user evaluate the results both qualitatively and quantitatively
   - While the runs happen in the background, draft some quantitative evals if there aren't any (if there are some, you can either use as is or modify if you feel something needs to change about them). Then explain them to the user (or if they already existed, explain the ones that already exist)
-  - Use the `eval-viewer/generate_review.py` script to show the user the results for them to look at, and also let them look at the quantitative metrics
+  - Present results to the user directly in conversation — show outputs, diffs, and metrics inline. For file outputs, tell the user where they're saved so they can inspect them
 - Rewrite the skill based on feedback from the user's evaluation of the results (and also if there are any glaring flaws that become apparent from the quantitative benchmarks)
 - Repeat until you're satisfied
 - Expand the test set and try again at larger scale
@@ -222,69 +222,42 @@ This is the only opportunity to capture this data — it comes through the task 
 
 Once all runs are done:
 
-1. **Grade each run** — spawn a grader subagent (or grade inline) that reads `agents/grader.md` and evaluates each assertion against the outputs. Save results to `grading.json` in each run directory. The grading.json expectations array must use the fields `text`, `passed`, and `evidence` (not `name`/`met`/`details` or other variants) — the viewer depends on these exact field names. For assertions that can be checked programmatically, write and run a script rather than eyeballing it — scripts are faster, more reliable, and can be reused across iterations.
-
-2. **Aggregate into benchmark** — run the aggregation script from the skill-creator directory:
-   ```bash
-   python -m scripts.aggregate_benchmark <workspace>/iteration-N --skill-name <name>
+1. **Grade each run** — spawn a grader subagent (or grade inline) to evaluate each assertion against the outputs. For each assertion, record whether it passed and cite specific evidence from the outputs. Save results to `grading.json` in each run directory using this structure:
+   ```json
+   {
+     "expectations": [
+       {"text": "assertion text", "passed": true, "evidence": "what you found"}
+     ],
+     "summary": {"passed": 2, "failed": 1, "total": 3, "pass_rate": 0.67}
+   }
    ```
-   This produces `benchmark.json` and `benchmark.md` with pass_rate, time, and tokens for each configuration, with mean +/- stddev and the delta. If generating benchmark.json manually, see `references/schemas.md` for the exact schema the viewer expects.
-Put each with_skill version before its baseline counterpart.
+   For assertions that can be checked programmatically, write and run a script rather than eyeballing it — scripts are faster, more reliable, and can be reused across iterations.
 
-3. **Do an analyst pass** — read the benchmark data and surface patterns the aggregate stats might hide. See `agents/analyzer.md` (the "Analyzing Benchmark Results" section) for what to look for — things like assertions that always pass regardless of skill (non-discriminating), high-variance evals (possibly flaky), and time/token tradeoffs.
+2. **Aggregate into benchmark** — read all `grading.json` and `timing.json` files from the iteration directory, compute pass_rate, time, and tokens for each configuration (with_skill vs without_skill), and calculate mean +/- stddev and the delta. Save as `benchmark.json` and `benchmark.md`. See `references/schemas.md` for the exact schema. Put each with_skill version before its baseline counterpart.
 
-4. **Launch the viewer** with both qualitative outputs and quantitative data:
-   ```bash
-   nohup python <skill-creator-path>/eval-viewer/generate_review.py \
-     <workspace>/iteration-N \
-     --skill-name "my-skill" \
-     --benchmark <workspace>/iteration-N/benchmark.json \
-     > /dev/null 2>&1 &
-   VIEWER_PID=$!
-   ```
-   For iteration 2+, also pass `--previous-workspace <workspace>/iteration-<N-1>`.
+3. **Do an analyst pass** — read the benchmark data and surface patterns the aggregate stats might hide: assertions that always pass regardless of skill (non-discriminating), high-variance evals (possibly flaky), and time/token tradeoffs. Save observations to the `notes` field of benchmark.json.
 
-   **Cowork / headless environments:** If `webbrowser.open()` is not available or the environment has no display, use `--static <output_path>` to write a standalone HTML file instead of starting a server. Feedback will be downloaded as a `feedback.json` file when the user clicks "Submit All Reviews". After download, copy `feedback.json` into the workspace directory for the next iteration to pick up.
+4. **Present results to the user** — show a summary of each test case directly in conversation:
+   - The prompt that was given
+   - Key outputs (inline or file paths for large files)
+   - Grading results (pass/fail per assertion)
+   - Benchmark comparison table (with_skill vs without_skill)
+   - Ask: "How do these look? Any feedback on specific test cases?"
 
-Note: please use generate_review.py to create the viewer; there's no need to write custom HTML.
+### Step 5: Collect feedback
 
-5. **Tell the user** something like: "I've opened the results in your browser. There are two tabs — 'Outputs' lets you click through each test case and leave feedback, 'Benchmark' shows the quantitative comparison. When you're done, come back here and let me know."
+Ask the user for feedback on each test case. Empty or positive feedback means it looked fine. Focus improvements on the test cases where the user had specific complaints.
 
-### What the user sees in the viewer
-
-The "Outputs" tab shows one test case at a time:
-- **Prompt**: the task that was given
-- **Output**: the files the skill produced, rendered inline where possible
-- **Previous Output** (iteration 2+): collapsed section showing last iteration's output
-- **Formal Grades** (if grading was run): collapsed section showing assertion pass/fail
-- **Feedback**: a textbox that auto-saves as they type
-- **Previous Feedback** (iteration 2+): their comments from last time, shown below the textbox
-
-The "Benchmark" tab shows the stats summary: pass rates, timing, and token usage for each configuration, with per-eval breakdowns and analyst observations.
-
-Navigation is via prev/next buttons or arrow keys. When done, they click "Submit All Reviews" which saves all feedback to `feedback.json`.
-
-### Step 5: Read the feedback
-
-When the user tells you they're done, read `feedback.json`:
+You can also save structured feedback to `feedback.json` in the iteration directory for reference in future iterations:
 
 ```json
 {
   "reviews": [
-    {"run_id": "eval-0-with_skill", "feedback": "the chart is missing axis labels", "timestamp": "..."},
-    {"run_id": "eval-1-with_skill", "feedback": "", "timestamp": "..."},
-    {"run_id": "eval-2-with_skill", "feedback": "perfect, love this", "timestamp": "..."}
-  ],
-  "status": "complete"
+    {"run_id": "eval-0-with_skill", "feedback": "the chart is missing axis labels"},
+    {"run_id": "eval-1-with_skill", "feedback": ""},
+    {"run_id": "eval-2-with_skill", "feedback": "perfect, love this"}
+  ]
 }
-```
-
-Empty feedback means the user thought it was fine. Focus your improvements on the test cases where the user had specific complaints.
-
-Kill the viewer server when you're done with it:
-
-```bash
-kill $VIEWER_PID 2>/dev/null
 ```
 
 ---
@@ -324,7 +297,13 @@ Keep going until:
 
 ## Advanced: Blind comparison
 
-For situations where you want a more rigorous comparison between two versions of a skill (e.g., the user asks "is the new version actually better?"), there's a blind comparison system. Read `agents/comparator.md` and `agents/analyzer.md` for the details. The basic idea is: give two outputs to an independent agent without telling it which is which, and let it judge quality. Then analyze why the winner won.
+For situations where you want a more rigorous comparison between two versions of a skill (e.g., the user asks "is the new version actually better?"), use a blind comparison approach:
+
+1. **Compare** — spawn a subagent that receives two outputs labeled "A" and "B" (randomize which is which). The subagent scores each on content (correctness, completeness, accuracy) and structure (organization, formatting, usability), picks a winner, and explains why. Save to `comparison.json`.
+
+2. **Analyze** — spawn another subagent to analyze why the winner won: what instructions led to better output, what the loser's skill was missing, and concrete improvement suggestions. Save to `analysis.json`.
+
+See `references/schemas.md` for the comparison.json and analysis.json schemas.
 
 This is optional, requires subagents, and most users won't need it. The human review loop is usually sufficient.
 
@@ -359,39 +338,26 @@ The key thing to avoid: don't make should-not-trigger queries obviously irreleva
 
 ### Step 2: Review with user
 
-Present the eval set to the user for review using the HTML template:
-
-1. Read the template from `assets/eval_review.html`
-2. Replace the placeholders:
-   - `__EVAL_DATA_PLACEHOLDER__` -> the JSON array of eval items (no quotes around it — it's a JS variable assignment)
-   - `__SKILL_NAME_PLACEHOLDER__` -> the skill's name
-   - `__SKILL_DESCRIPTION_PLACEHOLDER__` -> the skill's current description
-3. Write to a temp file (e.g., `/tmp/eval_review_<skill-name>.html`) and open it: `open /tmp/eval_review_<skill-name>.html`
-4. The user can edit queries, toggle should-trigger, add/remove entries, then click "Export Eval Set"
-5. The file downloads to `~/Downloads/eval_set.json` — check the Downloads folder for the most recent version in case there are multiple (e.g., `eval_set (1).json`)
+Present the eval set to the user for review directly in conversation. Show each query with its should_trigger label and ask: "Do these look right? Want to add, remove, or change any?" Adjust based on feedback.
 
 This step matters — bad eval queries lead to bad descriptions.
 
 ### Step 3: Run the optimization loop
 
-Tell the user: "This will take some time — I'll run the optimization loop in the background and check on it periodically."
+Tell the user: "This will take some time — I'll iterate on the description to improve triggering accuracy."
 
-Save the eval set to the workspace, then run in the background:
+The optimization loop works as follows:
 
-```bash
-python -m scripts.run_loop \
-  --eval-set <path-to-trigger-eval.json> \
-  --skill-path <path-to-skill> \
-  --model <model-id-powering-this-session> \
-  --max-iterations 5 \
-  --verbose
-```
-
-Use the model ID from your system prompt (the one powering the current session) so the triggering test matches what the user actually experiences.
-
-While it runs, periodically tail the output to give the user updates on which iteration it's on and what the scores look like.
-
-This handles the full optimization loop automatically. It splits the eval set into 60% train and 40% held-out test, evaluates the current description (running each query 3 times to get a reliable trigger rate), then calls Claude with extended thinking to propose improvements based on what failed. It re-evaluates each new description on both train and test, iterating up to 5 times. When it's done, it opens an HTML report in the browser showing the results per iteration and returns JSON with `best_description` — selected by test score rather than train score to avoid overfitting.
+1. Split the eval set into 60% train and 40% held-out test
+2. For each iteration (up to 5):
+   a. Test the current description against each query using `claude -p "<query>" --skill-prompt-file <skill-path>` (run each query 3 times for reliability)
+   b. Check whether the skill triggered (look for skill invocation in the output)
+   c. Calculate trigger accuracy (correct triggers + correct non-triggers)
+   d. Analyze what failed — which queries triggered incorrectly or didn't trigger when they should have
+   e. Rewrite the description to address the failures, using your understanding of how skill triggering works
+   f. Evaluate the new description on both train and test sets
+3. Select the best description by test score (not train score) to avoid overfitting
+4. Report results per iteration to the user
 
 ### How skill triggering works
 
@@ -405,15 +371,15 @@ Take `best_description` from the JSON output and update the skill's SKILL.md fro
 
 ---
 
-### Package and Present (only if `present_files` tool is available)
+### Package and Present
 
-Check whether you have access to the `present_files` tool. If you don't, skip this step. If you do, package the skill and present the .skill file to the user:
+If the user wants a portable `.skill` archive, create one by zipping the skill directory:
 
 ```bash
-python -m scripts.package_skill <path/to/skill-folder>
+cd <parent-of-skill-folder> && zip -r <skill-name>.skill <skill-name>/
 ```
 
-After packaging, direct the user to the resulting `.skill` file path so they can install it.
+Direct the user to the resulting `.skill` file path so they can share or install it. Skip this step if the user doesn't need packaging.
 
 ---
 
@@ -433,7 +399,7 @@ In Claude.ai, the core workflow is the same (draft -> test -> review -> improve 
 
 **Blind comparison**: Requires subagents. Skip it.
 
-**Packaging**: The `package_skill.py` script works anywhere with Python and a filesystem. On Claude.ai, you can run it and the user can download the resulting `.skill` file.
+**Packaging**: Use a simple `zip` command to package the skill. On Claude.ai, you can create it and the user can download the resulting `.skill` file.
 
 ---
 
@@ -442,24 +408,17 @@ In Claude.ai, the core workflow is the same (draft -> test -> review -> improve 
 If you're in Cowork, the main things to know are:
 
 - You have subagents, so the main workflow (spawn test cases in parallel, run baselines, grade, etc.) all works. (However, if you run into severe problems with timeouts, it's OK to run the test prompts in series rather than parallel.)
-- You don't have a browser or display, so when generating the eval viewer, use `--static <output_path>` to write a standalone HTML file instead of starting a server. Then proffer a link that the user can click to open the HTML in their browser.
-- For whatever reason, the Cowork setup seems to disincline Claude from generating the eval viewer after running the tests, so just to reiterate: whether you're in Cowork or in Claude Code, after running tests, you should always generate the eval viewer for the human to look at examples before revising the skill yourself and trying to make corrections, using `generate_review.py` (not writing your own boutique html code). Sorry in advance but I'm gonna go all caps here: GENERATE THE EVAL VIEWER *BEFORE* evaluating inputs yourself. You want to get them in front of the human ASAP!
-- Feedback works differently: since there's no running server, the viewer's "Submit All Reviews" button will download `feedback.json` as a file. You can then read it from there (you may have to request access first).
-- Packaging works — `package_skill.py` just needs Python and a filesystem.
-- Description optimization (`run_loop.py` / `run_eval.py`) should work in Cowork just fine since it uses `claude -p` via subprocess, not a browser, but please save it until you've fully finished making the skill and the user agrees it's in good shape.
+- You don't have a browser or display, so present all results directly in conversation — show outputs inline, provide file paths for large files, and collect feedback through the chat.
+- After running tests, always present results to the human BEFORE revising the skill yourself. Get them in front of the human ASAP!
+- Packaging works with a simple `zip` command — no external scripts needed.
+- Description optimization uses `claude -p` via subprocess, not a browser, so it works fine in Cowork. Save it until the skill is in good shape.
 
 ---
 
 ## Reference files
 
-The agents/ directory contains instructions for specialized subagents. Read them when you need to spawn the relevant subagent.
-
-- `agents/grader.md` — How to evaluate assertions against outputs
-- `agents/comparator.md` — How to do blind A/B comparison between two outputs
-- `agents/analyzer.md` — How to analyze why one version beat another
-
 The references/ directory has additional documentation:
-- `references/schemas.md` — JSON structures for evals.json, grading.json, etc.
+- `references/schemas.md` — JSON structures for evals.json, grading.json, benchmark.json, comparison.json, analysis.json, and other data structures
 
 ---
 
@@ -469,7 +428,7 @@ Repeating one more time the core loop here for emphasis:
 - Draft or edit the skill
 - Run claude-with-access-to-the-skill on test prompts
 - With the user, evaluate the outputs:
-  - Create benchmark.json and run `eval-viewer/generate_review.py` to help the user review them
+  - Create benchmark.json and present results to the user for review
   - Run quantitative evals
 - Repeat until you and the user are satisfied
 - Package the final skill and return it to the user.

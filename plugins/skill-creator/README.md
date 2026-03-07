@@ -33,7 +33,7 @@ Advanced features include blind A/B comparison between skill versions and benchm
 
 ## Included
 
-- `SKILL.md` -- comprehensive skill creation guide (~480 lines)
+- `SKILL.md` -- comprehensive skill creation guide (~440 lines), fully self-contained with no external script dependencies
 - `references/schemas.md` -- JSON schemas for evals, grading, benchmarks, and other data structures
 
 ## License
