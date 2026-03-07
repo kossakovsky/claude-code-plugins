@@ -1,0 +1,10 @@
+{
+  "name": "writing-skills",
+  "version": "1.0.0",
+  "description": "Create, test, and bulletproof Claude Code skills using TDD methodology. Based on obra/superpowers writing-skills",
+  "author": { "name": "obra" },
+  "homepage": "https://github.com/kossakovsky/cc-plugins",
+  "repository": "https://github.com/kossakovsky/cc-plugins",
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "testing", "development"]
+}

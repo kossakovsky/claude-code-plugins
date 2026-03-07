@@ -52,7 +52,7 @@ Optional component directories:
 | `switch-provider` | Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command |
 | `plugin-development` | Scaffold, validate, review, and submit Claude Code plugins |
 | `commit` | Smart git commits with conventional commit message generation |
-| `skill-creator` | Create, improve, and measure skills with evals and benchmarks |
+| `writing-skills` | Create, test, and bulletproof skills using TDD methodology |
 
 ## PR Review Instructions
 

@@ -45,16 +45,16 @@
       "keywords": ["git", "commit", "conventional-commits", "changelog"]
     },
     {
-      "name": "skill-creator",
-      "description": "Create new skills, modify and improve existing skills, and measure skill performance with evals and benchmarks. Originally from anthropics/skills, community-maintained",
+      "name": "writing-skills",
+      "description": "Create, test, and bulletproof Claude Code skills using TDD methodology. Based on obra/superpowers writing-skills",
       "version": "1.0.0",
       "author": {
-        "name": "anthropics"
+        "name": "obra"
       },
-      "source": "./plugins/skill-creator",
+      "source": "./plugins/writing-skills",
       "category": "developer-tools",
-      "tags": ["skills", "creator", "evals", "development"],
-      "keywords": ["skills", "creator", "evals", "development"]
+      "tags": ["skills", "tdd", "testing", "development"],
+      "keywords": ["skills", "tdd", "testing", "development"]
     }
   ]
 }
