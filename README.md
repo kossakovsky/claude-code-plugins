@@ -37,7 +37,7 @@ Install any plugin:
 | [switch-provider](plugins/switch-provider/) | 1.0.0 | ai-tools | Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) |
 | [plugin-development](plugins/plugin-development/) | 1.3.0 | developer-tools | Scaffold, validate, and submit Claude Code plugins |
 | [commit](plugins/commit/) | 1.0.0 | developer-tools | Smart git commits with conventional commit messages |
-| [skill-creator](plugins/skill-creator/) | 1.0.0 | developer-tools | Create and improve skills with evals and benchmarks |
+| [writing-skills](plugins/writing-skills/) | 1.0.0 | developer-tools | Create, test, and bulletproof skills using TDD methodology |
 
 ## Create & Submit Your Plugin
 

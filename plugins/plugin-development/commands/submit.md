@@ -45,7 +45,8 @@ Using data from `plugin.json`, generate a marketplace entry:
   "source": "./plugins/<name>",
   "author": { "name": "<from plugin.json or ask user>" },
   "category": "<ask user to choose>",
-  "tags": ["<from plugin.json keywords or ask user>"]
+  "tags": ["<from plugin.json keywords or ask user>"],
+  "keywords": ["<from plugin.json keywords or ask user>"]
 }
 ```
 
