@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Verification Schema",
+  "description": "Verification results for successfully created backups: existence, readability, completeness checks, and recovery hints",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when verification was performed"
+    },
+    "total_backups": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of backups verified"
+    },
+    "verified_success": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of backups that passed verification"
+    },
+    "verified_failed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of backups that failed verification"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {"type": "string"},
+          "backup_verification": {
+            "type": "object",
+            "properties": {
+              "timestamp": {"type": "string", "format": "date-time"},
+              "backup_id": {"type": ["string", "null"]},
+              "status": {
+                "type": "string",
+                "enum": ["passed", "failed"]
+              },
+              "checks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string"},
+                    "passed": {"type": "boolean"}
+                  },
+                  "required": ["name", "passed"]
+                }
+              },
+              "recovery_hints": {
+                "type": "object",
+                "properties": {
+                  "method": {"type": "string"},
+                  "instructions": {"type": "string"},
+                  "estimated_time_minutes": {"type": "integer", "minimum": 1},
+                  "pre_requisites": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  }
+                }
+              },
+              "error": {"type": ["string", "null"]}
+            },
+            "required": ["timestamp", "backup_id", "status", "checks"]
+          }
+        },
+        "required": ["resource_id", "backup_verification"]
+      }
+    }
+  },
+  "required": ["timestamp", "total_backups", "verified_success", "verified_failed", "resources"]
+}

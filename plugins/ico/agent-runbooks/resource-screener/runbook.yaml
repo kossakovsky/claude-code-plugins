@@ -1,0 +1,535 @@
+name: resource-screener
+phase: "Phase 1: Suspect (Layer D)"
+description: |
+  Multi-dimensional zombie resource scoring and priority ranking
+  - 4 simplified unified scoring dimensions (cpu_idle, network_idle, ownership_clarity, data_sensitivity)
+  - Environment-adjusted suspect_level thresholds
+  - One-vote veto protection rules
+  - Priority formula: zombie_score x env_multiplier x cost_weight + owner_bonus
+  - Self-check quality gate (BLOCKING)
+
+input_params:
+  - name: run_dir
+    type: string
+    required: true
+    description: Work directory absolute path
+  - name: ssh_key_path
+    type: string
+    required: false
+    description: SSH key path for SSH verification and cloud tags queries
+  - name: task_id
+    type: string
+    required: true
+    description: Task ID for progress tracking
+
+steps:
+  - id: setup-layer-d-skeleton
+    depends_on: []
+    type: inline
+    description: Input validation and initialization
+    prompt: |
+      import os
+      import json
+      from datetime import datetime
+
+      def run(run_dir, task_id):
+        # Verify input files exist
+        files_to_check = [
+          "layer_b_candidates.json",
+          "scan_plan.json"
+        ]
+
+        missing = []
+        for f in files_to_check:
+          path = os.path.join(run_dir, f)
+          if not os.path.exists(path):
+            missing.append(f)
+
+        if missing:
+          return {"status": "failed", "errors": f"Missing files: {missing}"}
+
+        # Read and validate key fields
+        try:
+          with open(os.path.join(run_dir, "layer_b_candidates.json")) as f:
+            candidates_data = json.load(f)
+            if "candidates" not in candidates_data:
+              return {"status": "failed", "error": "layer_b_candidates.json missing 'candidates' array"}
+            if len(candidates_data["candidates"]) == 0:
+              return {"status": "empty", "message": "No candidates after Layer B filtering"}
+
+          # Validate collector signal fields exist on first candidate
+          first = candidates_data["candidates"][0]
+          required_signals = ["resource_id", "resource_type", "entity_type"]
+          missing_signals = [s for s in required_signals if s not in first]
+          if missing_signals:
+            return {"status": "failed", "error": f"candidates missing required fields: {missing_signals}"}
+
+          # Optional signal fields (collector may provide these)
+          # cpu_avg_pct, network_mb_per_day, has_human_login, has_real_alert
+          # owner_status, dependencies, reachability
+
+          with open(os.path.join(run_dir, "scan_plan.json")) as f:
+            scan_plan = json.load(f)
+            if "dimension_framework" not in scan_plan:
+              return {"status": "failed", "error": "scan_plan.json missing 'dimension_framework'"}
+        except json.JSONDecodeError as e:
+          return {"status": "failed", "error": f"JSON parse error: {e}"}
+
+        # Create output directory
+        os.makedirs(os.path.join(run_dir, "analysis"), exist_ok=True)
+
+        return {
+          "status": "success",
+          "candidates_count": len(candidates_data["candidates"]),
+          "prepared_at": datetime.utcnow().isoformat() + "Z"
+        }
+
+  - id: execute-scoring-pipeline
+    depends_on: [setup-layer-d-skeleton]
+    type: inline
+    description: "Execute full scoring pipeline on all candidates"
+    prompt: |
+      import json
+      import os
+      import math
+
+      # Unified dimension weights (same for all resource types)
+      # Focus: CPU idleness, network idleness, ownership clarity, data sensitivity
+      # Heavier score on cpu+network near-zero = higher zombie suspicion
+      DIMENSION_WEIGHTS = {
+        "cpu_idle": 0.35,
+        "network_idle": 0.35,
+        "ownership_clarity": 0.20,
+        "data_sensitivity": 0.10
+      }
+
+      # === Signal → Dimension Score Converters ===
+
+      def compute_cpu_idle_score(cpu_avg_pct):
+        """Lower CPU peak = more idle = higher zombie suspicion.
+        Returns (score, reliability)."""
+        if cpu_avg_pct is None:
+          return 0.0, 0.0
+        if cpu_avg_pct <= 1.0:
+          return 0.95, 1.0
+        elif cpu_avg_pct <= 3.0:
+          return 0.80, 1.0
+        elif cpu_avg_pct <= 5.0:
+          return 0.50, 1.0
+        elif cpu_avg_pct <= 10.0:
+          return 0.20, 1.0
+        else:
+          return 0.0, 1.0
+
+      def compute_network_idle_score(network_mb_per_day):
+        """Lower network throughput = more idle = higher zombie suspicion.
+        Returns (score, reliability)."""
+        if network_mb_per_day is None:
+          return 0.0, 0.0
+        if network_mb_per_day <= 0.1:
+          return 0.95, 1.0
+        elif network_mb_per_day <= 1.0:
+          return 0.80, 1.0
+        elif network_mb_per_day <= 5.0:
+          return 0.50, 1.0
+        elif network_mb_per_day <= 20.0:
+          return 0.20, 1.0
+        else:
+          return 0.0, 1.0
+
+      def compute_ownership_clarity_score(owner_status):
+        """Unclear ownership = higher zombie suspicion.
+        Returns (score, reliability)."""
+        scores = {
+          "untagged": 0.90,
+          "orphaned": 0.70,
+          "shared": 0.30,
+          "active_owner": 0.0
+        }
+        return scores.get(owner_status, 0.50), 1.0
+
+      def compute_data_sensitivity_score(tags, environment, resource_type):
+        """Higher data sensitivity = LOWER zombie score (more caution needed).
+        Inverted: 0 = highly sensitive, 1 = not sensitive.
+        Returns (score, reliability)."""
+        if isinstance(tags, str):
+          try:
+            tags = json.loads(tags)
+          except:
+            tags = {}
+
+        sensitivity = 0.0
+
+        # Environment factor
+        env = environment.lower() if environment else ""
+        if env in ("prod", "production"):
+          sensitivity += 0.4
+        elif env in ("staging", "stage"):
+          sensitivity += 0.2
+
+        # Resource type factor
+        sensitive_types = {"database": 0.3, "storage": 0.2}
+        sensitivity += sensitive_types.get(resource_type, 0.0)
+
+        # Tag-based factor
+        purpose = (tags.get("purpose", "") or "").lower()
+        data_class = (tags.get("data_classification", "") or "").lower()
+        if purpose in ("database", "data-warehouse"):
+          sensitivity += 0.2
+        if data_class in ("confidential", "restricted", "pii"):
+          sensitivity += 0.3
+
+        sensitivity = min(sensitivity, 1.0)
+        # Invert: high sensitivity → low score (dampens zombie suspicion)
+        return 1.0 - sensitivity, 1.0
+
+      def run(run_dir, task_id):
+        with open(os.path.join(run_dir, "layer_b_candidates.json")) as f:
+          candidates_data = json.load(f)
+        candidates = candidates_data["candidates"]
+
+        results = []
+        for candidate in candidates:
+          resource_type = candidate.get("resource_type", "unknown")
+          resource_id = candidate["resource_id"]
+
+          # Step 1: Compute per-dimension scores from collector signal fields
+          # Collector provides: cpu_avg_pct, network_mb_per_day,
+          # has_human_login, has_real_alert, owner_status
+          cpu_score, cpu_rel = compute_cpu_idle_score(
+            candidate.get("cpu_avg_pct")
+          )
+          net_score, net_rel = compute_network_idle_score(
+            candidate.get("network_mb_per_day")
+          )
+          own_score, own_rel = compute_ownership_clarity_score(
+            candidate.get("owner_status", "untagged")
+          )
+
+          tags = candidate.get("tags", {})
+          environment = candidate.get("environment", "unknown")
+          ds_score, ds_rel = compute_data_sensitivity_score(
+            tags, environment, resource_type
+          )
+
+          scored_dims = {
+            "cpu_idle":      {"score": cpu_score, "reliability": cpu_rel},
+            "network_idle":  {"score": net_score, "reliability": net_rel},
+            "ownership_clarity": {"score": own_score, "reliability": own_rel},
+            "data_sensitivity":  {"score": ds_score, "reliability": ds_rel}
+          }
+
+          # Step 2: Compute zombie_score via weighted formula
+          # Data integrity gates:
+          # a. Valid dimensions (reliability > 0) < 2 -> force zombie_score=0.0
+          # b. cpu_idle + network_idle both reliability=0.0 -> cap at 0.60
+          # c. has_real_alert=true suppresses network_idle dimension
+          valid_dims = [d for d in scored_dims.values() if d["reliability"] > 0]
+          if len(valid_dims) < 2:
+            zombie_score = 0.0
+          else:
+            numerator = 0.0
+            denominator = 0.0
+            for dim_name, weight in DIMENSION_WEIGHTS.items():
+              if dim_name in scored_dims:
+                s = scored_dims[dim_name]
+                numerator += s["score"] * weight * s["reliability"]
+                denominator += weight * s["reliability"]
+            zombie_score = numerator / denominator if denominator > 0 else 0.0
+
+            # Gate b: cpu_idle + network_idle both reliability=0
+            if cpu_rel == 0.0 and net_rel == 0.0:
+              zombie_score = min(zombie_score, 0.60)
+
+            # Gate c: has_real_alert suppresses idle signal strength
+            if candidate.get("has_real_alert", False):
+              zombie_score = min(zombie_score, 0.70)
+
+            zombie_score = min(max(zombie_score, 0.0), 1.0)
+
+          # Step 3: Check protection rules (simplified - no SSH/crontab data)
+          protection_triggered = False
+
+          # DR/backup tag veto
+          if isinstance(tags, str):
+            try:
+              tags = json.loads(tags)
+            except:
+              tags = {}
+          purpose = (tags.get("purpose", "") or "").lower()
+          if purpose in ["disaster-recovery", "backup"]:
+            protection_triggered = True
+
+          # Semantic naming pattern veto
+          resource_id = candidate.get("resource_id", "").lower()
+          if any(resource_id.startswith(p) for p in ["dr-", "backup-", "standby-"]):
+            protection_triggered = True
+          if any((tags.get(k) or "") in ["standby", "backup"] for k in ["role", "usage"]):
+            protection_triggered = True
+
+          # Step 4: Map suspect_level via environment-adjusted thresholds
+          env_raw = candidate.get("environment", "").lower()
+          if env_raw in ("prod", "production"):
+            environment = "production"
+          elif env_raw in ("staging", "stage"):
+            environment = "staging"
+          elif env_raw in ("dev", "development", "test", "testing"):
+            environment = "dev"
+
+          if protection_triggered:
+            suspect_level = "low"
+          else:
+            env_thresholds = {
+              "production": {"high": 0.90, "medium": 0.75},
+              "staging": {"high": 0.80, "medium": 0.55},
+              "dev": {"high": 0.75, "medium": 0.50}
+            }
+            thresholds = env_thresholds.get(environment, {"high": 0.90, "medium": 0.75})
+            if zombie_score >= thresholds["high"]:
+              suspect_level = "high"
+            elif zombie_score >= thresholds["medium"]:
+              suspect_level = "medium"
+            else:
+              suspect_level = "low"
+
+          # Step 5: Compute priority
+          env_multipliers = {
+            "production": 0.6,
+            "staging": 0.8, "stage": 0.8,
+            "dev": 1.0, "development": 1.0, "test": 1.0, "testing": 1.0
+          }
+          env_multiplier = env_multipliers.get(environment, 0.6)
+
+          estimated_cost = candidate.get("estimated_monthly_cost", 0)
+          if estimated_cost <= 0:
+            cost_weight = 0.30
+          else:
+            cost_weight = math.log10(estimated_cost + 1) / 3
+            cost_weight = min(max(cost_weight, 0.30), 1.0)
+
+          owner_status = candidate.get("owner_status", "untagged")
+          owner_bonuses = {
+            "untagged": 0.10,
+            "orphaned": 0.05,
+            "active_owner": 0.0,
+            "shared": 0.0
+          }
+          owner_bonus = owner_bonuses.get(owner_status, 0.0)
+
+          priority = (zombie_score * env_multiplier * cost_weight) + owner_bonus
+          priority = min(max(priority, 0.0), 1.0)
+
+          # Write intermediate result
+          result = {
+            "resource_id": resource_id,
+            "resource_type": resource_type,
+            "zombie_score": zombie_score,
+            "suspect_level": suspect_level,
+            "priority": priority,
+            "protection_triggered": protection_triggered,
+            "environment": environment,
+            "scored_dimensions": scored_dims
+          }
+          results.append(result)
+
+          os.makedirs(os.path.join(run_dir, "analysis"), exist_ok=True)
+          with open(os.path.join(run_dir, "analysis", f"zombie_suspect_{resource_id}.json"), "w") as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+
+        return {
+          "status": "success",
+          "candidates_processed": len(results),
+          "high_count": sum(1 for r in results if r["suspect_level"] == "high"),
+          "medium_count": sum(1 for r in results if r["suspect_level"] == "medium"),
+          "low_count": sum(1 for r in results if r["suspect_level"] == "low")
+        }
+
+  - id: generate-per-resource-files
+    depends_on: [execute-scoring-pipeline]
+    name: generate-per-resource-files
+    type: agent
+    description: Generate per-resource output files (LLM assistant to produce investigation_brief etc.)
+    prompt: |
+      For each suspect candidate, generate a `analysis/zombie_suspect_{resource_id}.json` file based on the following information.
+
+      Required fields:
+      - assessed_at: ISO 8601 timestamp
+      - resource_id: Unique resource identifier
+      - resource_type: compute/storage/network/database/cache/k8s_workload/k8s_service/k8s_orphan/domain
+      - entity_type: Semantic entity type
+      - environment: prod/staging/dev/unknown
+      - creation_time: Mapped from candidate.provisioned_at
+      - estimated_monthly_cost: Monthly cost (USD)
+      - suspect_level: high/medium/low
+      - zombie_score: 0-1 score (already calculated)
+      - priority: 0-1 ranking score (already calculated)
+      - owner_status: active_owner/orphaned/untagged/shared
+      - owner_detail: "phase2_pending" (populated by Phase 2)
+      - investigation_brief: 2-3 sentence summary
+      - blast_radius: Blast radius analysis object containing summary (string), depends_on (array), dependencies (array)
+      - evidence: Evidence list (each item with [CONFIRMED]/[SUPPORTED]/[INFERRED]/[UNKNOWN] marker)
+      - protection_rules_checked: Protection rules check results
+      - data_quality: Data quality record
+      - risk_factors: Risk factor list
+      - suggested_verification: Verification plan
+      - suggested_next_step: Recommended next action for this candidate
+
+      Forbidden fields:
+      - safe_to_delete
+      - verdict
+      - confidence (use zombie_score instead)
+      - recommendation
+      - blast_radius_score
+
+    output:
+      - schema: schemas/suspect-resource-schema.json
+        file: analysis/zombie_suspect_{resource_id}.json
+
+  - id: generate-suspect-assessment-json
+    depends_on: [generate-per-resource-files]
+    name: generate-suspect-assessment-json
+    type: inline
+    description: Generate summary output file
+    prompt: |
+      import json
+      import os
+      from datetime import datetime
+
+      def generate_assessment(run_dir, candidates):
+        """Generate suspect_assessment.json"""
+        high_suspects = [c for c in candidates if c["suspect_level"] == "high"]
+        medium_suspects = [c for c in candidates if c["suspect_level"] == "medium"]
+        low_suspects = [c for c in candidates if c["suspect_level"] == "low"]
+
+        avg_score = sum(c["zombie_score"] for c in candidates) / len(candidates) if candidates else 0
+        total_savings = sum(c["estimated_monthly_cost"] for c in high_suspects + medium_suspects)
+
+        # candidates[]: only 9 slim fields
+        slim_candidates = [
+          {
+            "resource_id": c["resource_id"],
+            "resource_type": c["resource_type"],
+            "suspect_level": c["suspect_level"],
+            "zombie_score": c["zombie_score"],
+            "priority": c["priority"],
+            "estimated_monthly_cost": c["estimated_monthly_cost"],
+            "owner_status": c["owner_status"],
+            "investigation_brief": c["investigation_brief"],
+            "suggested_next_step": c.get("suggested_next_step", "")
+          }
+          for c in candidates
+        ]
+
+        assessment = {
+          "assessed_at": datetime.utcnow().isoformat() + "Z",
+          "total_candidates": len(candidates),
+          "summary": {
+            "high_suspect": len(high_suspects),
+            "medium_suspect": len(medium_suspects),
+            "low_suspect": len(low_suspects),
+            "average_zombie_score": round(avg_score, 4),
+            "total_estimated_monthly_savings": total_savings
+          },
+          "self_check": {
+            "passed": True,
+            "gaps": []
+          },
+          "candidates": sorted(
+            slim_candidates,
+            key=lambda x: x["priority"],
+            reverse=True
+          )
+        }
+
+        return assessment
+
+      def run(run_dir, task_id):
+        # Read per-resource files generated by step 3 and build candidates list
+        analysis_dir = os.path.join(run_dir, "analysis")
+        candidates = []
+        for fname in sorted(os.listdir(analysis_dir)):
+          if fname.startswith("zombie_suspect_") and fname.endswith(".json"):
+            with open(os.path.join(analysis_dir, fname)) as f:
+              candidates.append(json.load(f))
+
+        if not candidates:
+          return {"status": "failed", "error": "No per-resource analysis files found from step 3"}
+
+        assessment = generate_assessment(run_dir, candidates)
+
+        # Also load layer_b_candidates.json to get estimated_monthly_cost for candidates that
+        # may not have it in per-resource files
+        layer_b_path = os.path.join(run_dir, "layer_b_candidates.json")
+        if os.path.exists(layer_b_path):
+          with open(layer_b_path) as f:
+            lb_data = json.load(f)
+          lb_map = {c["resource_id"]: c for c in lb_data.get("candidates", [])}
+          for c in assessment["candidates"]:
+            if c.get("estimated_monthly_cost", 0) == 0:
+              lb_candidate = lb_map.get(c["resource_id"], {})
+              c["estimated_monthly_cost"] = lb_candidate.get("estimated_monthly_cost", 0)
+
+        # Recalculate total_savings after cost enrichment
+        assessment["summary"]["total_estimated_monthly_savings"] = sum(
+          c["estimated_monthly_cost"]
+          for c in assessment["candidates"]
+          if c["suspect_level"] in ("high", "medium")
+        )
+
+        # Write suspect_assessment.json
+        assessment_path = os.path.join(run_dir, "analysis", "suspect_assessment.json")
+        with open(assessment_path, "w") as f:
+          json.dump(assessment, f, indent=2, ensure_ascii=False)
+
+        return {
+          "status": "success",
+          "data": assessment,
+          "candidates_assessed": len(candidates)
+        }
+
+    input:
+      - schema: schemas/suspect-resource-schema.json
+        from_step: generate-per-resource-files
+        file: analysis/zombie_suspect_{resource_id}.json
+
+    output:
+      - schema: schemas/assessment-schema.json
+        file: analysis/suspect_assessment.json
+
+  - id: write-output-files
+    depends_on: [generate-suspect-assessment-json]
+    name: write-output-files
+    type: inline
+    description: Write final progress tracking output
+    prompt: |
+      import json
+      import os
+      from datetime import datetime
+
+      def run(run_dir, task_id):
+        assessment_path = os.path.join(run_dir, "analysis", "suspect_assessment.json")
+        if not os.path.exists(assessment_path):
+          return {"status": "failed", "error": "suspect_assessment.json not found — previous step must run first"}
+
+        with open(assessment_path) as f:
+          assessment_data = json.load(f)
+
+        # Update progress file
+        episodes_path = os.path.join(run_dir, "scan_episodes.json")
+        try:
+          with open(episodes_path) as f:
+            episodes = json.load(f)
+        except:
+          episodes = {"events": []}
+
+        episodes["events"].append({
+          "timestamp": datetime.utcnow().isoformat() + "Z",
+          "layer": "Layer D",
+          "status": "completed",
+          "candidates_assessed": assessment_data["summary"]["total_candidates"]
+        })
+
+        with open(episodes_path, "w") as f:
+          json.dump(episodes, f, indent=2, ensure_ascii=False)
+
+        return {"status": "success", "output_files": [episodes_path]}

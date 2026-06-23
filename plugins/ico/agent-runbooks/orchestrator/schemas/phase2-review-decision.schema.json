@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Phase 2 Review Decision",
+  "description": "User approval decision for Phase 2 isolation plan — proceed or abort",
+  "type": "object",
+  "properties": {
+    "approved": {
+      "type": "boolean",
+      "description": "Whether the isolation plan is approved for execution"
+    },
+    "approved_at": { "type": "string", "format": "date-time" },
+    "approved_by": { "type": "string" },
+    "resources": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Resource IDs covered by this approval"
+    },
+    "notes": { "type": "string" }
+  },
+  "required": ["approved", "approved_at"]
+}

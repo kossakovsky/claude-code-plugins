@@ -1,0 +1,186 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Scan Episodes Schema",
+  "description": "Progress tracking for Phase 1 Suspect resource discovery and 3-signal coarse filter",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Task identifier for tracking"
+    },
+    "scan_status": {
+      "type": "string",
+      "enum": [
+        "phase1_discovery_started",
+        "phase1_layer_a1_completed",
+        "phase1_layer_a2_completed",
+        "phase1_layer_b1_completed",
+        "phase1_layer_b2_completed",
+        "phase1_discovery_complete",
+        "phase1_discovery_complete_zero_candidates",
+        "phase1_discovery_complete_all_active",
+        "phase1_discovery_failed"
+      ],
+      "description": "Current scan status"
+    },
+    "current_layer": {
+      "type": "string",
+      "enum": [
+        "A.1",
+        "A.2",
+        "B.1",
+        "B.2",
+        "finalize"
+      ],
+      "description": "Current execution layer"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Scan start time (ISO 8601)"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Scan completion time (ISO 8601)"
+    },
+    "layer_a_stats": {
+      "type": "object",
+      "description": "Layer A execution statistics",
+      "properties": {
+        "total_in_scope": {
+          "type": "integer",
+          "description": "Total resources discovered in Layer A.1"
+        },
+        "candidates_count": {
+          "type": "integer",
+          "description": "Resources passing Layer A.2 coarse exclusion"
+        },
+        "excluded_count": {
+          "type": "integer",
+          "description": "Resources excluded by Layer A.2"
+        },
+        "filter_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Exclusion rate"
+        },
+        "excluded_reasons": {
+          "type": "object",
+          "description": "Breakdown of exclusion reasons",
+          "properties": {
+            "new_resource": {
+              "type": "integer",
+              "description": "Excluded: provisioned <= 7 days ago"
+            },
+            "not_ready": {
+              "type": "integer",
+              "description": "Excluded: status in [terminated, deleting, creating]"
+            },
+            "dr_backup_tag": {
+              "type": "integer",
+              "description": "Excluded: DR/backup tags"
+            },
+            "potential_dr_backup": {
+              "type": "integer",
+              "description": "Flagged: potential DR/backup by semantic check"
+            }
+          }
+        }
+      }
+    },
+    "layer_b_stats": {
+      "type": "object",
+      "description": "Layer B execution statistics",
+      "properties": {
+        "layer_a_input": {
+          "type": "integer",
+          "description": "Resources from Layer A"
+        },
+        "layer_b_candidates_count": {
+          "type": "integer",
+          "description": "Resources passing all 3 coarse filter signals"
+        },
+        "excluded_count": {
+          "type": "integer",
+          "description": "Resources excluded by Layer B.2"
+        },
+        "filter_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Exclusion rate"
+        },
+        "signals_collected_count": {
+          "type": "integer",
+          "description": "Resources with at least 1 signal successfully collected"
+        },
+        "signals_failed_count": {
+          "type": "integer",
+          "description": "Resources with all 3 signals failed"
+        },
+        "excluded_reasons": {
+          "type": "object",
+          "description": "Breakdown of exclusion reasons by coarse filter signal",
+          "properties": {
+            "signal_cpu_peak": {
+              "type": "integer",
+              "description": "Excluded: CPU daily average > 10% over 14 days"
+            },
+            "signal_network_io": {
+              "type": "integer",
+              "description": "Excluded: Network I/O > 200 MB/day over 14 days"
+            },
+            "signal_human_login": {
+              "type": "integer",
+              "description": "Excluded: Human login detected in last 30 days"
+            }
+          }
+        }
+      }
+    },
+    "skipped_entity_types": {
+      "type": "array",
+      "description": "Entity types skipped due to cloud CLI tool failures",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "List of errors encountered during execution",
+      "items": {
+        "type": "object",
+        "properties": {
+          "layer": {
+            "type": "string",
+            "description": "Layer where error occurred"
+          },
+          "error_type": {
+            "type": "string",
+            "description": "Type of error"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When error occurred"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "task_id",
+    "scan_status",
+    "current_layer",
+    "started_at"
+  ]
+}

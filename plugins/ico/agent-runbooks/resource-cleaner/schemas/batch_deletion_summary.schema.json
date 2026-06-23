@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Batch Deletion Summary",
+  "description": "Batch deletion execution summary",
+  "type": "object",
+  "required": ["batch_id", "execution_timestamp"],
+  "properties": {
+    "batch_id": {
+      "type": "string",
+      "description": "Batch identifier"
+    },
+    "execution_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resources_summary": {
+      "type": "object",
+      "properties": {
+        "total_planned": {
+          "type": "integer"
+        },
+        "total_deleted": {
+          "type": "integer"
+        },
+        "total_failed": {
+          "type": "integer"
+        },
+        "total_skipped": {
+          "type": "integer"
+        }
+      }
+    },
+    "cost_summary": {
+      "type": "object",
+      "properties": {
+        "total_monthly_savings": {
+          "type": "number"
+        },
+        "total_annual_savings": {
+          "type": "number"
+        },
+        "total_backup_cost": {
+          "type": "number"
+        },
+        "net_monthly_savings": {
+          "type": "number"
+        }
+      }
+    },
+    "resource_outcomes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["deleted", "failed", "skipped"]
+          },
+          "deletion_time_sec": {
+            "type": "integer"
+          },
+          "monthly_savings": {
+            "type": "number"
+          },
+          "failure_reason": {
+            "type": "string"
+          },
+          "retry_recommended": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "audit_details": {
+      "type": "object",
+      "properties": {
+        "all_resources_backed_up": {
+          "type": "boolean"
+        },
+        "all_backups_verified": {
+          "type": "boolean"
+        },
+        "all_deletions_verified": {
+          "type": "boolean"
+        },
+        "all_metadata_updated": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Intent Detection Output",
+  "type": "object",
+  "properties": {
+    "entity_types": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "account": { "type": "string" },
+        "region": { "type": "string" },
+        "tag_filters": { "type": "object" }
+      }
+    },
+    "ssh_verification_enabled": { "type": "boolean" },
+    "exclusions": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["entity_types"]
+}

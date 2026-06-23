@@ -1,0 +1,339 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Report Output Schema",
+  "description": "Complete backup report for a single resource",
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "description": "Unique report ID (backup-{resource_id}-{timestamp})"
+    },
+    "resource_id": {
+      "type": "string"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "compute",
+        "database",
+        "cache",
+        "storage",
+        "network",
+        "k8s_workload",
+        "k8s_orphan",
+        "k8s_service"
+      ]
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "CloudVM",
+        "CloudDisk",
+        "CloudRDS",
+        "CloudCache",
+        "LoadBalancer",
+        "StorageBucket",
+        "Domain",
+        "K8sWorkload",
+        "K8sService",
+        "K8sOrphan"
+      ],
+      "description": "Resource entity type from Phase 1 discovery (consistent across pipeline)"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "staging",
+        "dev"
+      ]
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pre_backup_validation": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "warning",
+            "failed"
+          ]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "passed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "passed"
+            ]
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "backup_strategy": {
+      "type": "object",
+      "properties": {
+        "entity_type": {
+          "type": "string"
+        },
+        "backup_method": {
+          "type": "string"
+        },
+        "retention_days": {
+          "type": "integer"
+        },
+        "backup_window_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "cost_estimate_daily": {
+          "type": "number"
+        },
+        "cost_estimate_total": {
+          "type": "number"
+        },
+        "recovery_hints": {
+          "type": "string"
+        }
+      }
+    },
+    "backup_record": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failed",
+            "escalated_to_manual"
+          ]
+        },
+        "backup_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "backup_type": {
+          "type": "string"
+        },
+        "backup_size_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "completion_duration_seconds": {
+          "type": "integer"
+        },
+        "attempts": {
+          "type": "integer"
+        },
+        "verification": {
+          "type": "object",
+          "properties": {
+            "passed": {
+              "type": "boolean"
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "passed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "protection": {
+          "type": "object",
+          "properties": {
+            "tags_applied": {
+              "type": "boolean"
+            },
+            "retention_policy": {
+              "type": "object",
+              "properties": {
+                "days": {
+                  "type": "integer"
+                },
+                "expires_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "encrypted": {
+              "type": "boolean"
+            }
+          }
+        },
+        "recovery_hints": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string"
+            },
+            "instructions": {
+              "type": "string"
+            },
+            "estimated_time_minutes": {
+              "type": "integer"
+            },
+            "pre_requisites": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "failure_record": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "all_retries_exhausted",
+            "verification_failed",
+            "escalated"
+          ]
+        },
+        "final_error": {
+          "type": "string"
+        },
+        "attempts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "attempt": {
+                "type": "integer"
+              },
+              "status": {
+                "type": "string"
+              },
+              "error": {
+                "type": "string"
+              },
+              "retry_delay_seconds": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "escalation_needed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "escalation": {
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "escalated_to": {
+              "type": "string"
+            },
+            "action_required": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "audit_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "event": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "timestamp",
+          "event"
+        ]
+      }
+    }
+  },
+  "required": [
+    "report_id",
+    "resource_id",
+    "resource_type",
+    "entity_type",
+    "environment",
+    "decision_id",
+    "generated_at",
+    "backup_record",
+    "audit_log"
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Global Isolation Batch Plan",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "generated_at": { "type": "string", "format": "date-time" },
+        "environment": { "type": "string", "enum": ["dev", "staging", "production"] },
+        "total_candidates": { "type": "integer" },
+        "high_priority_count": { "type": "integer" },
+        "medium_priority_count": { "type": "integer" },
+        "total_batches": { "type": "integer" }
+      },
+      "required": ["generated_at", "environment", "total_candidates", "high_priority_count", "medium_priority_count", "total_batches"]
+    },
+    "batches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "batch_id": { "type": "integer" },
+          "batch_name": { "type": "string" },
+          "description": { "type": "string" },
+          "parallelizable": { "type": "boolean" },
+          "resource_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "count": { "type": "integer" },
+          "rationale": { "type": "string" },
+          "estimated_execution_time": { "type": "string" },
+          "resource_details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resource_id": { "type": "string" },
+                "resource_type": { "type": "string" },
+                "method": { "type": "string" },
+                "priority": { "type": "number" },
+                "zombie_score": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "required": ["resource_id", "resource_type", "method", "priority", "zombie_score"]
+            }
+          },
+          "ordering": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "step": { "type": "integer" },
+                "resource_id": { "type": "string" },
+                "reason": { "type": "string" },
+                "wait_before_next": { "type": "integer" }
+              },
+              "required": ["step", "resource_id", "reason"]
+            }
+          },
+          "dependency_graph": {
+            "type": "object",
+            "properties": {
+              "edges": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "from": { "type": "string" },
+                    "to": { "type": "string" },
+                    "relationship": { "type": "string" },
+                    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+                  },
+                  "required": ["from", "to", "relationship", "confidence"]
+                }
+              }
+            }
+          },
+          "circular_dependency_note": { "type": "string" },
+          "zombie_chain_rationale": { "type": "string" },
+          "observation_period_sync": { "type": "string" },
+          "required_manual_actions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["batch_id", "batch_name", "description", "parallelizable", "resource_ids", "count", "rationale", "estimated_execution_time"]
+      }
+    },
+    "global_execution_plan": {
+      "type": "object",
+      "properties": {
+        "recommended_sequence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "total_estimated_time": { "type": "string" },
+        "critical_path": { "type": "string" },
+        "parallelization_opportunities": { "type": "string" }
+      },
+      "required": ["recommended_sequence", "total_estimated_time", "critical_path", "parallelization_opportunities"]
+    },
+    "dependency_graph_summary": {
+      "type": "object",
+      "properties": {
+        "total_resources": { "type": "integer" },
+        "total_edges": { "type": "integer" },
+        "strongly_connected_components": { "type": "integer" },
+        "circular_dependencies_detected": { "type": "boolean" },
+        "circular_group_id": { "type": "string" },
+        "resources_in_circular_group": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["total_resources", "total_edges", "strongly_connected_components", "circular_dependencies_detected"]
+    },
+    "safety_validations": {
+      "type": "object",
+      "properties": {
+        "no_critical_dependency_violations": { "type": "boolean" },
+        "all_blast_radius_analyzed": { "type": "boolean" },
+        "zombie_chains_grouped": { "type": "boolean" },
+        "batch_order_safe": { "type": "boolean" },
+        "validation_summary": { "type": "string" }
+      },
+      "required": ["no_critical_dependency_violations", "all_blast_radius_analyzed", "zombie_chains_grouped", "batch_order_safe", "validation_summary"]
+    }
+  },
+  "required": ["metadata", "batches", "global_execution_plan", "dependency_graph_summary", "safety_validations"]
+}

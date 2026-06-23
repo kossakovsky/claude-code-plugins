@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Attribution Result",
+  "description": "3-dimensional anomaly attribution analysis (Phase C)",
+  "type": "object",
+  "properties": {
+    "resource_id": { "type": "string" },
+    "anomalies_analyzed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "anomaly_id": { "type": "string" },
+          "anomaly_type": {
+            "type": "string",
+            "enum": ["alert", "complaint"]
+          },
+          "anomaly_signal": { "type": "string" },
+          "anomaly_timestamp": { "type": "string", "format": "date-time" },
+          "anomaly_resource": { "type": "string" },
+          "temporal_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Time gap correlation (≤2h=1.0, 2-6h=0.7, 6-24h=0.4, >24h=0.0)"
+          },
+          "temporal_gap_minutes": {
+            "type": "number",
+            "description": "Minutes between isolation and anomaly"
+          },
+          "topological_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Topology correlation (direct=1.0, 2-hop=0.6, none=0.0)"
+          },
+          "topological_match": {
+            "type": "string",
+            "enum": ["direct_blast_radius", "indirect_2hop", "no_match"]
+          },
+          "directional_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Direction correlation (upstream→downstream=1.0, peer=0.5, downstream→upstream=0.0)"
+          },
+          "directional_relationship": {
+            "type": "string",
+            "enum": ["upstream_to_downstream", "downstream_to_upstream", "peer", "none"]
+          },
+          "attribution_result": {
+            "type": "string",
+            "enum": ["CONFIRMED", "UNCERTAIN", "DISMISS"],
+            "description": "≥2 dimensions=CONFIRMED, 1 dimension=UNCERTAIN, 0 dimensions=DISMISS"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["high", "low", "none"]
+          },
+          "average_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "anomaly_id", "anomaly_type", "anomaly_signal", "anomaly_timestamp",
+          "temporal_score", "topological_score", "directional_score",
+          "attribution_result", "confidence"
+        ]
+      }
+    },
+    "overall_attribution": {
+      "type": "string",
+      "enum": ["CONFIRMED", "UNCERTAIN", "DISMISS"],
+      "description": "Overall attribution across all anomalies"
+    },
+    "rollback_justified": {
+      "type": "boolean",
+      "description": "Whether rollback was justified based on attribution"
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total_anomalies": { "type": "integer" },
+        "confirmed_anomalies": { "type": "integer" },
+        "uncertain_anomalies": { "type": "integer" },
+        "dismissed_anomalies": { "type": "integer" }
+      }
+    }
+  },
+  "required": [
+    "resource_id", "anomalies_analyzed", "overall_attribution", "rollback_justified"
+  ]
+}

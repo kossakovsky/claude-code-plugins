@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deletion Verification",
+  "description": "Deletion verification results (3 cloud API confirmations)",
+  "type": "object",
+  "required": ["results"],
+  "properties": {
+    "results": {
+      "type": "array",
+      "description": "Per-resource deletion verification results",
+      "items": {
+        "type": "object",
+        "required": ["resource_id", "deleted"],
+        "properties": {
+          "resource_id": {
+            "type": "string"
+          },
+          "deleted": {
+            "type": "boolean",
+            "description": "Whether resource was deleted"
+          },
+          "query_attempts": {
+            "type": "integer",
+            "description": "Number of query attempts",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "final_status": {
+            "type": "string",
+            "enum": ["not_found", "still_exists"],
+            "description": "Final status"
+          }
+        }
+      }
+    },
+    "verification_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Verification timestamp"
+    }
+  }
+}

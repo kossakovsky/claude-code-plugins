@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Final Summary",
+  "description": "Machine-readable summary of the complete Phase 3 decision handling outcome",
+  "type": "object",
+  "required": ["phase", "completed_at", "stats", "next_steps"],
+  "properties": {
+    "phase": {
+      "type": "string",
+      "const": "Phase 3 Complete",
+      "description": "Phase identifier"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when Phase 3 completed"
+    },
+    "stats": {
+      "type": "object",
+      "required": [
+        "total_scanned", "total_candidates", "confirmed_delete",
+        "keep_exempt", "extend_observation", "delete_succeeded",
+        "delete_failed", "monthly_savings", "yearly_savings"
+      ],
+      "properties": {
+        "total_scanned": { "type": "integer", "minimum": 0, "description": "Total resources scanned across all phases" },
+        "total_candidates": { "type": "integer", "minimum": 0, "description": "Total candidate resources evaluated" },
+        "confirmed_delete": { "type": "integer", "minimum": 0, "description": "Resources confirmed for deletion" },
+        "keep_exempt": { "type": "integer", "minimum": 0, "description": "Resources marked as keep exempt" },
+        "extend_observation": { "type": "integer", "minimum": 0, "description": "Resources with extended observation" },
+        "delete_succeeded": { "type": "integer", "minimum": 0, "description": "Successful deletions" },
+        "delete_failed": { "type": "integer", "minimum": 0, "description": "Failed deletions" },
+        "monthly_savings": { "type": "number", "minimum": 0, "description": "Projected monthly cost savings" },
+        "yearly_savings": { "type": "number", "minimum": 0, "description": "Projected yearly cost savings" }
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Recommended follow-up actions"
+    }
+  }
+}

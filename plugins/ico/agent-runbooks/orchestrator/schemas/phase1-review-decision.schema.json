@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Phase 1 Review Decision",
+  "description": "User decisions from Phase 1 review gate — which resources enter deep scan vs skip",
+  "type": "object",
+  "properties": {
+    "resources_for_deep_scan": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Resource IDs selected by user for Phase 2 deep scan"
+    },
+    "skip_resources": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Resource IDs user chose to exclude from further investigation"
+    },
+    "decided_by": { "type": "string" },
+    "decided_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["resources_for_deep_scan", "skip_resources", "decided_at"]
+}

@@ -1,0 +1,316 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Zombie Deep Scan Result",
+  "description": "Phase 2 deep scan output for a single target machine. Contains comprehensive technical profile and business context for isolation planning.",
+  "type": "object",
+  "required": ["resource_id", "scanned_at", "technical", "business", "scan_risks_skipped"],
+  "properties": {
+    "resource_id": {
+      "type": "string",
+      "description": "Unique resource identifier (e.g., i-xxx, instance ID, hostname)"
+    },
+    "scanned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp of scan completion"
+    },
+    "technical": {
+      "type": "object",
+      "required": [
+        "processes",
+        "listening_ports",
+        "crontab_entries",
+        "systemd_timers",
+        "disk_partitions",
+        "disk_usage",
+        "installed_packages_summary",
+        "local_databases",
+        "app_log_paths",
+        "recent_boots",
+        "external_traffic",
+        "traffic_graph"
+      ],
+      "properties": {
+        "processes": {
+          "type": "array",
+          "description": "Running processes from ps aux",
+          "items": {
+            "type": "object",
+            "required": ["pid", "user", "command"],
+            "properties": {
+              "pid": { "type": "integer", "description": "Process ID" },
+              "user": { "type": "string", "description": "Process owner user" },
+              "cpu_percent": { "type": "number", "description": "CPU usage percentage" },
+              "mem_percent": { "type": "number", "description": "Memory usage percentage" },
+              "command": { "type": "string", "description": "Full command line" }
+            }
+          }
+        },
+        "listening_ports": {
+          "type": "array",
+          "description": "Listening TCP/UDP ports from ss -tnlp",
+          "items": {
+            "type": "object",
+            "required": ["port", "process"],
+            "properties": {
+              "port": { "type": "integer", "description": "Listening port number" },
+              "protocol": { "type": "string", "enum": ["tcp", "udp"], "description": "Transport protocol" },
+              "process": { "type": "string", "description": "Process name listening on this port" },
+              "pid": { "type": "integer", "description": "PID of the listening process" }
+            }
+          }
+        },
+        "crontab_entries": {
+          "type": "array",
+          "description": "Crontab entries from all users + system crontab",
+          "items": {
+            "type": "object",
+            "required": ["user", "schedule", "command"],
+            "properties": {
+              "user": { "type": "string", "description": "User who owns this crontab entry (or 'system')" },
+              "schedule": { "type": "string", "description": "Cron schedule expression" },
+              "command": { "type": "string", "description": "Scheduled command" }
+            }
+          }
+        },
+        "systemd_timers": {
+          "type": "array",
+          "description": "Systemd timers from systemctl list-timers --all",
+          "items": {
+            "type": "object",
+            "required": ["unit", "next", "schedule"],
+            "properties": {
+              "unit": { "type": "string", "description": "Timer unit name" },
+              "next": { "type": "string", "description": "Next trigger time" },
+              "schedule": { "type": "string", "description": "Schedule description from systemd" }
+            }
+          }
+        },
+        "disk_partitions": {
+          "type": "array",
+          "description": "Mounted filesystems from df -h",
+          "items": {
+            "type": "object",
+            "required": ["filesystem", "size", "used", "mount"],
+            "properties": {
+              "filesystem": { "type": "string", "description": "Filesystem device or source" },
+              "size": { "type": "string", "description": "Total size (human-readable)" },
+              "used": { "type": "string", "description": "Used space (human-readable)" },
+              "available": { "type": "string", "description": "Available space (human-readable)" },
+              "use_percent": { "type": "string", "description": "Usage percentage" },
+              "mount": { "type": "string", "description": "Mount point" }
+            }
+          }
+        },
+        "disk_usage": {
+          "type": "object",
+          "required": ["scanned_paths", "results", "user_approved"],
+          "properties": {
+            "scanned_paths": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "All paths scanned with du (each layer)"
+            },
+            "results": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["path", "size"],
+                "properties": {
+                  "path": { "type": "string", "description": "Directory path" },
+                  "size": { "type": "string", "description": "Total size (human-readable)" }
+                }
+              },
+              "description": "du results for each scanned path"
+            },
+            "user_approved": {
+              "type": "boolean",
+              "description": "Whether du scan was explicitly approved by user"
+            }
+          }
+        },
+        "installed_packages_summary": {
+          "type": "string",
+          "description": "Summary of installed packages: total count + key packages found (nginx, postgresql, docker, kube, etc.)"
+        },
+        "local_databases": {
+          "type": "array",
+          "description": "Local database/cache services detected from listening ports",
+          "items": {
+            "type": "object",
+            "required": ["type", "port"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["MySQL", "PostgreSQL", "Redis", "MongoDB", "Kafka", "Elasticsearch", "Unknown"],
+                "description": "Database type inferred from port"
+              },
+              "port": { "type": "integer", "description": "Listening port" },
+              "process": { "type": "string", "description": "Associated process name if identified" }
+            }
+          }
+        },
+        "app_log_paths": {
+          "type": "array",
+          "description": "Application log files and their modification times from /var/log",
+          "items": {
+            "type": "object",
+            "required": ["path", "last_modified"],
+            "properties": {
+              "path": { "type": "string", "description": "Full path to log file or directory" },
+              "size": { "type": "string", "description": "File size (human-readable)" },
+              "last_modified": { "type": "string", "format": "date-time", "description": "Last modification timestamp" }
+            }
+          }
+        },
+        "recent_boots": {
+          "type": "array",
+          "description": "Recent system boots from journalctl --list-boots",
+          "items": {
+            "type": "object",
+            "properties": {
+              "boot_id": { "type": "string", "description": "Boot ID" },
+              "timestamp": { "type": "string", "description": "Boot timestamp" }
+            }
+          }
+        },
+        "external_traffic": {
+          "type": "array",
+          "description": "External IPs with established connections (excluding loopback)",
+          "items": {
+            "type": "object",
+            "required": ["remote_ip", "connection_count"],
+            "properties": {
+              "remote_ip": { "type": "string", "description": "Remote IP address" },
+              "connection_count": { "type": "integer", "description": "Number of connections" },
+              "local_services": {
+                "type": "array",
+                "description": "Local ports/services being accessed by this IP",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "port": { "type": "integer" },
+                    "service": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "traffic_graph": {
+          "type": "object",
+          "description": "Network traffic topology from iftop 30s sampling. Merged with ss -tnp for process attribution.",
+          "properties": {
+            "collection_method": {
+              "type": "string",
+              "description": "Command used: 'iftop -t -P -s 30 -n'"
+            },
+            "collection_duration_s": {
+              "type": "integer",
+              "description": "Sampling duration in seconds"
+            },
+            "edges": {
+              "type": "array",
+              "description": "Traffic flows with process attribution",
+              "items": {
+                "type": "object",
+                "required": ["src_ip", "src_port", "dst_ip", "dst_port", "rate_kbps"],
+                "properties": {
+                  "src_ip": { "type": "string" },
+                  "src_port": { "type": "integer" },
+                  "src_process": { "type": ["string", "null"] },
+                  "src_service_type": {
+                    "type": "string",
+                    "enum": ["gateway", "service", "database", "cache", "queue", "storage", "unknown"]
+                  },
+                  "dst_ip": { "type": "string" },
+                  "dst_port": { "type": "integer" },
+                  "dst_process": { "type": ["string", "null"] },
+                  "dst_service_type": {
+                    "type": "string",
+                    "enum": ["gateway", "service", "database", "cache", "queue", "storage", "unknown"]
+                  },
+                  "rate_kbps": { "type": "number", "minimum": 0 },
+                  "classification": { "type": "string" }
+                }
+              }
+            },
+            "unmapped_count": {
+              "type": "integer",
+              "description": "Number of edges where process attribution failed"
+            }
+          }
+        }
+      }
+    },
+    "business": {
+      "type": "object",
+      "required": ["application", "system", "owner", "recent_changes", "related_resources"],
+      "properties": {
+        "application": {
+          "type": "string",
+          "description": "Application name this machine belongs to (e.g. order-service, nginx-gateway)"
+        },
+        "system": {
+          "type": "string",
+          "description": "Business system or domain (e.g. trading-system, user-center)"
+        },
+        "owner": {
+          "type": "object",
+          "required": ["name", "team", "source"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Owner name or 'unknown' if not found"
+            },
+            "team": {
+              "type": "string",
+              "description": "Owner's team or 'unknown'"
+            },
+            "source": {
+              "type": "string",
+              "description": "Where ownership info came from: cloud_tag, git_blame, audit_log, manual, none"
+            }
+          }
+        },
+        "recent_changes": {
+          "type": "array",
+          "description": "Recent changes in last 90 days (audit log events, deployments, config changes)",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Change type: audit_log, deployment, file_modification, config_change"
+              },
+              "event": { "type": "string", "description": "Event description" },
+              "timestamp": { "type": "string", "format": "date-time", "description": "When the change occurred" }
+            }
+          }
+        },
+        "related_resources": {
+          "type": "array",
+          "description": "Related resources this machine depends on (databases, caches, other services)",
+          "items": {
+            "type": "object",
+            "required": ["type", "host"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Resource type: PostgreSQL, MySQL, Redis, MongoDB, Kafka, HTTP, gRPC, NFS, etc."
+              },
+              "host": { "type": "string", "description": "Hostname or IP of the related resource" },
+              "port": { "type": "integer", "description": "Port number if known" },
+              "role": { "type": "string", "description": "Role in the architecture: primary_db, cache, message_queue, upstream_api, config_server, etc." }
+            }
+          }
+        }
+      }
+    },
+    "scan_risks_skipped": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of scan steps that were skipped due to risk concerns or user refusal (e.g., 'du_on_/data user refused', 'du_on_/opt timeout after 60s')"
+    }
+  }
+}

@@ -1,0 +1,371 @@
+name: backup-creator
+description: |
+  Phase 6 Delete: Create differentiated backups per resource type before deletion.
+
+  This runbook implements the forced backup strategy from phase-6-delete.md section 4:
+  - Pre-backup validation (resource exists, isolation intact, cloud API accessible)
+  - Backup strategy dispatch (10+ resource types x environments)
+  - Backup creation with 3-retry + exponential backoff
+  - Backup verification (metadata validation, restore hints)
+  - Backup protection (tagging, lifecycle rules)
+  - Escalation to manual if all retries fail
+  - Report generation per resource
+
+version: "1.0"
+
+input_params:
+  - name: run_dir
+    type: string
+    required: true
+    description: "Working directory absolute path for input/output files"
+
+  - name: decision_id
+    type: string
+    required: true
+    description: "Phase 5 confirmation decision ID (e.g., confirm-20260605-001)"
+
+  - name: phase5_decision_file
+    type: string
+    required: true
+    description: "Path to Phase 5 decision file (confirm/phase5_decision.json from zombie-decision-handler), containing resources array with resource_id, entity_type, environment, cloud_provider, resource_metadata"
+
+  - name: ssh_key_path
+    type: string
+    required: false
+    description: "SSH key path for cloud API calls and remote execution"
+
+  - name: task_id
+    type: string
+    required: true
+    description: "Task ID for progress tracking in backup_episodes.json"
+
+  - name: max_concurrent_backups
+    type: integer
+    required: false
+    default: 5
+    description: "Maximum concurrent backup operations (avoid cloud API throttling)"
+
+  - name: backup_retention_days_override
+    type: integer
+    required: false
+    description: "Override default retention days (prod:30, staging:14, dev:7)"
+
+outputs:
+  - path: delete/
+    description: Phase 6 backup artifacts directory
+  - path: delete/backup_validation_start.json
+    description: Initial resource validation results
+  - path: delete/pre_backup_validation.json
+    description: Per-resource pre-backup validation (existence, isolation, API access)
+  - path: delete/backup_strategies.json
+    description: Backup method, retention, and recovery hints per resource
+  - path: delete/backup_creation_progress.json
+    description: Backup creation progress with retry tracking
+  - path: delete/backup_verification.json
+    description: Backup accessibility and recoverability verification
+  - path: delete/backup_protection.json
+    description: Tags, lifecycle rules, and encryption applied to backups
+  - path: delete/backup_summary.json
+    description: Aggregate summary across all resources
+  - path: delete/backup_report_*.json
+    description: Per-resource detailed backup reports
+  - path: delete/escalations.json
+    description: Escalation payload for failed backups
+  - path: delete/backup_episodes.json
+    description: Task-level progress tracking
+  - path: delete/backup_final_report.json
+    description: Final phase completion report
+
+steps:
+  - id: validate_input
+    depends_on: []
+    type: inline
+    description: "Validate input parameters and read resource list"
+    prompt: |
+      Your task is to validate input parameters and read the list of resources to be backed up.
+
+      **Steps**:
+      1. Verify that the run_dir directory exists and is writable
+      2. Verify that {run_dir}/{phase5_decision_file} file exists
+      3. Read phase5_decision_file, extract the resources array (written by decision-handler's write-phase5-decision step), verify each element contains:
+         - resource_id (required)
+         - resource_type (required): CloudVM/CloudRDS/CloudCache/K8sWorkload/... (resource_type defined in isolation plan)
+         - entity_type (required): VM/Database/Cache/K8s/ElasticIP/LoadBalancer/... (cloud provider entity type)
+         - environment (required): dev/staging/prod
+         - cloud_provider (required): aws/aliyun/k8s
+         - resource_metadata (required): JSON object with provider-specific fields
+      4. Read decision_id from phase5_decision_file (auto-uses the ID assigned by decision-handler)
+      5. Count resources, group by entity_type
+      6. Write to {run_dir}/delete/backup_validation_start.json
+      7. If validation fails, return error status; if passed, continue
+    output:
+      - schema: schemas/backup_validation_start.schema.json
+        file: delete/backup_validation_start.json
+
+  - id: pre_backup_validation
+    depends_on: [validate_input]
+    type: agent
+    description: "Phase 1: Validate each resource before backup attempt (existence, isolation state, API accessibility, storage quota)"
+    prompt_file: prompts/01_pre_backup_validation.md
+    input:
+      - schema: schemas/backup_validation_start.schema.json
+        from_step: validate_input
+        file: delete/backup_validation_start.json
+    output:
+      - schema: schemas/pre_backup_validation.schema.json
+        file: delete/pre_backup_validation.json
+
+  - id: select_backup_strategy
+    depends_on: [pre_backup_validation]
+    type: agent
+    description: "Phase 2: Select backup method per resource type and environment"
+    prompt_file: prompts/02_backup_strategy_selection.md
+    input:
+      - schema: schemas/pre_backup_validation.schema.json
+        from_step: pre_backup_validation
+        file: delete/pre_backup_validation.json
+    output:
+      - schema: schemas/backup_strategies.schema.json
+        file: delete/backup_strategies.json
+
+  - id: backup_creation_batch
+    depends_on: [select_backup_strategy]
+    type: inline
+    description: "Phase 3: Create backups with retry logic (max_concurrent_backups parallel, 3 retries each)"
+    prompt: |
+      Your task is to execute backup creation with retry logic and concurrency control.
+
+      **Architecture**:
+      - Maintain a work queue, max {max_concurrent_backups} concurrent backup tasks
+      - Each backup retries up to 3 times with exponential backoff (5s, 10s, 20s)
+      - Successful backups record backup_id; failed backups record error and push to retry queue or escalate to manual
+
+      **For each resource**:
+
+      1. **Attempt 1**
+         - Call the backup creation function for the corresponding resource type:
+           - CloudVM: create_ami() + create_snapshots_for_data_volumes()
+           - RDS: create_final_snapshot()
+           - Redis: execute_bgsave() + export_rdb_to_s3()
+           - K8s: export_yaml_manifest() + upload_to_s3()
+           - ... (refer to phase-6-delete.md section 4.2-4.10)
+         - Record start time, backup ID (if returned immediately), call parameters
+         - Wait for backup completion (poll status, timeout = resource-type dependent)
+
+      2. **Failure handling** (first attempt or retry)
+         - Catch exceptions, classify as:
+           - **Retriable**: Service unavailable, Timeout, Rate limit, Transient error
+           - **Non-retriable**: Invalid credential, Resource not found, Quota exceeded (hard limit)
+         - Retriable error -> wait backoff time, add to retry queue
+         - Non-retriable error -> immediately record as failed, prepare escalation
+
+      3. **Attempts 2 and 3**
+         - Repeat step 1, record attempt number
+         - If 3rd attempt still fails -> record as "escalation_required"
+
+      4. **Success indicators**
+         - Backup ID returned, backup status is available/completed
+         - Backup size > 0 (for RDB, YAML files, etc.)
+
+      5. **Concurrency control**:
+         - Maintain active backup task count <= {max_concurrent_backups}
+         - Manage using queue and async workers
+
+      6. **Write progress file** {run_dir}/delete/backup_creation_progress.json with per-resource attempt records, status, backup IDs, and audit events.
+    input:
+      - schema: schemas/backup_strategies.schema.json
+        from_step: select_backup_strategy
+        file: delete/backup_strategies.json
+    output:
+      - schema: schemas/backup_creation_progress.schema.json
+        file: delete/backup_creation_progress.json
+
+  - id: backup_verification
+    depends_on: [backup_creation_batch]
+    type: inline
+    description: "Phase 4: Verify each backup is accessible and restorable"
+    prompt: |
+      Your task is to verify the accessibility and recoverability of each successfully created backup.
+
+      **For each successful backup**:
+
+      1. **Existence check**
+         - CloudVM AMI: describe_images(ImageIds=[ami_id]) -> state must be "available"
+         - RDS snapshot: describe_db_snapshots(DBSnapshotIdentifier=...) -> state must be "available"
+         - Redis RDB: Check S3 object exists, size > 0
+         - K8s YAML: Check S3 object exists, size > 0
+
+      2. **Readability check**
+         - Can read backup metadata (IAM permissions correct)
+         - For Redis RDB, verify JSON config snapshot format is valid
+         - For K8s YAML, run kubectl apply --dry-run=client to verify syntax
+
+      3. **Completeness check** (resource-type dependent)
+         - CloudVM: All data disk snapshots are complete
+         - RDS: Snapshot size > 0, includes database parameters
+         - K8s: YAML includes all related ConfigMap/Secret/Service
+
+      4. **Recovery hints generation**
+         - Based on resource type and backup method, generate recovery steps with method, instructions, estimated_time_minutes, and pre_requisites
+
+      5. **Failure handling**
+         - If verification fails, mark as "backup_verification_failed"
+         - Trigger manual escalation: cannot confirm backup is recoverable, needs manual confirmation
+
+      6. **Write verification results** {run_dir}/delete/backup_verification.json with per-resource checks, recovery hints, and status.
+    input:
+      - schema: schemas/backup_creation_progress.schema.json
+        from_step: backup_creation_batch
+        file: delete/backup_creation_progress.json
+    output:
+      - schema: schemas/backup_verification.schema.json
+        file: delete/backup_verification.json
+
+  - id: backup_protection
+    depends_on: [backup_verification]
+    type: inline
+    description: "Phase 5: Apply protection tags and lifecycle rules to backups"
+    prompt: |
+      Your task is to apply protection measures to all successfully verified backups.
+
+      **For each successfully verified backup**:
+
+      1. **Apply tags** (all resource types)
+         - CloudVM AMI and Snapshots:
+           - Tag: `zombie-backup=true`
+           - Tag: `decision_id={decision_id}`
+           - Tag: `resource_id={resource_id}`
+           - Tag: `backup_date={date}`
+           - Tag: `retention_days={retention_days}`
+         - RDS Snapshot: Same as above (if tag supported)
+         - S3/OSS objects:
+           - Metadata: `zombie-backup=true`, `decision_id=...`
+           - S3 Tag: Same as above
+
+      2. **Set lifecycle rules** (S3/OSS)
+         - For objects with prefix `backup-*`:
+           - Expiration Rule: Days={retention_days}, Filter: Tag `zombie-backup=true`, Action: Delete object + delete all versions
+
+      3. **Enable encryption** (handled by resource type category)
+         - **K8s Secret backup (mandatory encryption)**:
+           - Must use KMS to encrypt Secret data
+           - Check: if resource_type == "k8s_secret" or entity_type == "K8sSecret"
+             - Must provide KMS key ARN or Key ID
+             - Use KMS to encrypt exported YAML files (unencrypted export not allowed)
+             - Verify encryption flag is recorded in S3/OSS object metadata as `kms_encrypted=true`
+             - If KMS key is missing, mark as FAILED, refuse to save unencrypted Secret
+           - Encryption algorithm: AES-256-GCM or AES-256-CBC (via KMS)
+         - **Other resource backups** (recommended encryption):
+           - CloudVM: Enable SSE-S3 or SSE-KMS (optional)
+           - RDS: Confirm snapshot is encrypted (if original instance encrypted)
+           - S3/OSS: Enable default encryption policy (optional)
+           - K8s ConfigMap/PVC: If containing sensitive data, recommend enabling KMS (optional)
+
+      4. **Access control**
+         - **K8s Secret backup (mandatory access restriction)**:
+           - Only allow recovery scripts and auditors to read
+           - S3: Set BucketPolicy to Deny all GetObject except for recovery scripts
+           - OSS: Set Bucket ACL to Deny public access
+         - **Other resource backups** (optional):
+           - Restrict backup access permissions (only recovery scripts can read)
+           - Prevent accidental deletion (IAM deny DeleteObject)
+
+      5. **Write protection results** {run_dir}/delete/backup_protection.json with per-resource actions, status, and K8s secret protection details.
+    input:
+      - schema: schemas/backup_verification.schema.json
+        from_step: backup_verification
+        file: delete/backup_verification.json
+    output:
+      - schema: schemas/backup_protection.schema.json
+        file: delete/backup_protection.json
+
+  - id: generate_reports
+    depends_on: [backup_protection, backup_creation_batch]
+    type: inline
+    description: "Phase 6: Generate per-resource backup reports and aggregate summary"
+    prompt: |
+      Your task is to generate detailed backup reports and a summary.
+
+      **Generate per-resource reports** {run_dir}/delete/backup_report_{resource_id}.json for each resource, combining data from all prior phases: pre_backup_validation, backup_strategy, backup_record (status, backup_id, type, size, duration, attempts, verification, protection), failure_record (if failed after retries), and audit_log.
+
+      **Generate summary report** {run_dir}/delete/backup_summary.json with:
+      - statistics: total, successful, failed, escalations, success_rate
+      - by_resource_type and by_environment breakdowns
+      - backup_storage_costs: total size, daily cost, retention, total cost
+      - escalations list with resource_id, reason, action_required
+      - next_steps: ready_for_deletion flag, escalated resources requiring manual action, recommendation
+    input:
+      - schema: schemas/backup_creation_progress.schema.json
+        from_step: backup_creation_batch
+        file: delete/backup_creation_progress.json
+      - schema: schemas/backup_protection.schema.json
+        from_step: backup_protection
+        file: delete/backup_protection.json
+    output:
+      - schema: schemas/backup_report_output.json
+        file: delete/backup_report_{resource_id}.json
+        per_resource: true
+        description: "Per-resource detailed backup report"
+      - schema: schemas/backup_summary.schema.json
+        file: delete/backup_summary.json
+        description: "Aggregate backup summary across all resources"
+
+  - id: handle_escalations
+    depends_on: [generate_reports]
+    type: inline
+    description: "Phase 7: Process escalations and send notifications"
+    prompt: |
+      Your task is to process all escalations and notify relevant personnel.
+
+      **For each escalated resource**:
+
+      1. **Generate escalation payload** {run_dir}/delete/escalations.json with escalation_id, resource_id, resource_type, decision_id, reason, error, recommended_action, escalated_at, escalated_to, required_response, and notification tracking.
+
+      2. **Send notification** to the Phase 5 decision maker:
+         - Escalation type: ZOMBIE_BACKUP_FAILED
+         - Recipient: Phase 5 decision maker (from decision_id record)
+         - Content: escalated resource list, failure reasons, recommended actions
+
+      3. **Update progress** {run_dir}/delete/backup_episodes.json:
+         - Mark escalation status
+         - Record notification send time
+
+      4. **Output results** with escalation_processing summary (total, notifications sent, timestamp, status).
+    input:
+      - schema: schemas/backup_summary.schema.json
+        from_step: generate_reports
+        file: delete/backup_summary.json
+    output:
+      - schema: schemas/escalations.schema.json
+        file: delete/escalations.json
+
+  - id: finalize
+    depends_on: [handle_escalations, generate_reports]
+    type: inline
+    description: "Phase 8: Finalize and update task context"
+    prompt: |
+      Your task is to finalize the backup process and update task status.
+
+      **Steps**:
+
+      1. **Aggregate all reports**
+         - Read {run_dir}/delete/backup_report_*.json
+         - Count successful/failed/escalated
+
+      2. **Update progress file** {run_dir}/delete/backup_episodes.json with task_id, phase=phase_6_backup, status, completed_at, statistics, and result summary.
+
+      3. **Generate final report** {run_dir}/delete/backup_final_report.json with phase_6_backup_result: status, total, successful, escalations, output_files, next_phase, proceed_with_deletion flag, and decision_id.
+
+      4. **Return status** indicating success/partial_success/failed with counts, output file manifest, and whether deletion can proceed.
+    input:
+      - schema: schemas/backup_summary.schema.json
+        from_step: generate_reports
+        file: delete/backup_summary.json
+      - schema: schemas/escalations.schema.json
+        from_step: handle_escalations
+        file: delete/escalations.json
+    output:
+      - schema: schemas/backup_episodes.schema.json
+        file: delete/backup_episodes.json
+      - schema: schemas/backup_final_report.schema.json
+        file: delete/backup_final_report.json

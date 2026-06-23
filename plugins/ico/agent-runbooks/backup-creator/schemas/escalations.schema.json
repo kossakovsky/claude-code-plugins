@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Escalations Schema",
+  "description": "Escalation payload for resources that failed backup after all retries: escalation details, recommended actions, and notification tracking",
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when escalations were generated"
+    },
+    "escalation_processing": {
+      "type": "object",
+      "properties": {
+        "total_escalations": {"type": "integer", "minimum": 0},
+        "notifications_sent": {"type": "integer", "minimum": 0},
+        "timestamp": {"type": "string", "format": "date-time"},
+        "status": {
+          "type": "string",
+          "enum": ["completed", "partial", "failed"]
+        }
+      },
+      "required": ["total_escalations", "notifications_sent", "timestamp", "status"]
+    },
+    "escalations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "escalation_id": {"type": "string"},
+          "resource_id": {"type": "string"},
+          "resource_type": {"type": "string"},
+          "decision_id": {"type": "string"},
+          "reason": {"type": "string"},
+          "error": {"type": "string"},
+          "recommended_action": {"type": "string"},
+          "escalated_at": {"type": "string", "format": "date-time"},
+          "escalated_to": {"type": "string"},
+          "required_response": {"type": "string"},
+          "notification_sent": {"type": "boolean"},
+          "notification_type": {
+            "type": "string",
+            "enum": ["ZOMBIE_BACKUP_FAILED"]
+          }
+        },
+        "required": ["escalation_id", "resource_id", "resource_type", "decision_id", "reason", "escalated_at"]
+      }
+    }
+  },
+  "required": ["generated_at", "escalation_processing", "escalations"]
+}

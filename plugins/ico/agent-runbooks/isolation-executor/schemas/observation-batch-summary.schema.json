@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Observation Batch Summary",
+  "description": "Aggregate summary of all observation reports in a batch (Phase E output)",
+  "type": "object",
+  "properties": {
+    "observation_batch_id": {
+      "type": "string",
+      "pattern": "^obs-batch-",
+      "description": "Unique batch identifier (obs-batch-{uuid})"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "total_resources": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "results": {
+      "type": "object",
+      "properties": {
+        "passed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Resources with observation_result = passed"
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Resources with observation_result = failed"
+        },
+        "uncertain": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Resources with observation_result = uncertain"
+        }
+      },
+      "required": ["passed", "failed", "uncertain"]
+    },
+    "rollback_summary": {
+      "type": "object",
+      "properties": {
+        "triggered": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Resources where rollback was triggered"
+        },
+        "completed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Resources where rollback completed successfully"
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Resources where rollback failed"
+        }
+      },
+      "required": ["triggered", "completed", "failed"]
+    },
+    "metrics_summary": {
+      "type": "object",
+      "properties": {
+        "total_alerts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_complaints": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resources_with_anomalies": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of resources with at least one alert or complaint"
+        },
+        "max_error_rate_observed": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["total_alerts", "total_complaints", "resources_with_anomalies"]
+    },
+    "resources": {
+      "type": "array",
+      "description": "Summary of each resource's observation result",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": { "type": "string" },
+          "resource_type": { "type": "string" },
+          "observation_result": {
+            "type": "string",
+            "enum": ["passed", "failed", "uncertain"]
+          },
+          "rollback_triggered": { "type": "boolean" },
+          "alert_count": { "type": "integer" },
+          "complaint_count": { "type": "integer" },
+          "observation_period_days": { "type": "integer" }
+        },
+        "required": [
+          "resource_id", "resource_type", "observation_result",
+          "rollback_triggered", "alert_count", "complaint_count"
+        ]
+      }
+    }
+  },
+  "required": [
+    "observation_batch_id", "generated_at", "total_resources",
+    "results", "rollback_summary", "metrics_summary", "resources"
+  ]
+}

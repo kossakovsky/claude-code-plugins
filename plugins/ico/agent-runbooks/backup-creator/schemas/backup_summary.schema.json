@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Summary Schema",
+  "description": "Aggregate summary of all backup operations: statistics by resource type, environment, storage costs, escalations, and next steps",
+  "properties": {
+    "summary_id": {
+      "type": "string",
+      "description": "Unique summary ID (backup-summary-{date}-{seq})"
+    },
+    "decision_id": {
+      "type": "string",
+      "description": "Phase 5 confirmation decision ID"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when summary was generated"
+    },
+    "statistics": {
+      "type": "object",
+      "properties": {
+        "total_resources": {"type": "integer", "minimum": 0},
+        "successful_backups": {"type": "integer", "minimum": 0},
+        "failed_backups": {"type": "integer", "minimum": 0},
+        "escalations": {"type": "integer", "minimum": 0},
+        "success_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "required": ["total_resources", "successful_backups", "failed_backups", "escalations"]
+    },
+    "by_resource_type": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "total": {"type": "integer"},
+          "success": {"type": "integer"},
+          "failed": {"type": "integer"},
+          "escalation": {"type": "integer"}
+        }
+      }
+    },
+    "by_environment": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "total": {"type": "integer"},
+          "success": {"type": "integer"},
+          "failed": {"type": "integer"}
+        }
+      }
+    },
+    "backup_storage_costs": {
+      "type": "object",
+      "properties": {
+        "total_backup_size_gb": {"type": "number", "minimum": 0},
+        "daily_storage_cost": {"type": "number", "minimum": 0},
+        "retention_period_days": {"type": "integer", "minimum": 1},
+        "total_retention_cost": {"type": "number", "minimum": 0}
+      },
+      "required": ["total_backup_size_gb", "daily_storage_cost", "retention_period_days", "total_retention_cost"]
+    },
+    "escalations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {"type": "string"},
+          "reason": {"type": "string"},
+          "error": {"type": "string"},
+          "action_required": {"type": "string"}
+        },
+        "required": ["resource_id", "reason", "action_required"]
+      }
+    },
+    "next_steps": {
+      "type": "object",
+      "properties": {
+        "successful_resources": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "ready_for_deletion": {"type": "boolean"},
+        "escalated_resources_require_manual_action": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "recommendation": {"type": "string"}
+      },
+      "required": ["ready_for_deletion", "recommendation"]
+    },
+    "per_resource_report_paths": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of per-resource report file paths"
+    }
+  },
+  "required": ["summary_id", "decision_id", "generated_at", "statistics"]
+}

@@ -1,0 +1,363 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Layer B Candidates Schema",
+  "description": "Resources after Layer B 3-signal coarse filter (active resources excluded)",
+  "properties": {
+    "layer_a_input": {
+      "type": "integer",
+      "description": "Number of resources from Layer A"
+    },
+    "layer_b_candidates_count": {
+      "type": "integer",
+      "description": "Number of resources passing all 4 coarse filter signals"
+    },
+    "filter_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Exclusion rate: (layer_a_input - layer_b_candidates_count) / layer_a_input"
+    },
+    "candidates": {
+      "type": "array",
+      "description": "Resources passing all 4 coarse filter signals (zombie candidates)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "description": "Unique resource identifier"
+          },
+          "resource_type": {
+            "type": "string",
+            "enum": [
+              "compute",
+              "storage",
+              "network",
+              "database",
+              "cache",
+              "k8s_workload",
+              "k8s_service",
+              "k8s_orphan",
+              "domain"
+            ],
+            "description": "Resource category"
+          },
+          "entity_type": {
+            "type": "string",
+            "enum": [
+              "CloudVM",
+              "CloudDisk",
+              "CloudRDS",
+              "CloudCache",
+              "LoadBalancer",
+              "StorageBucket",
+              "Domain",
+              "K8sWorkload",
+              "K8sService",
+              "K8sOrphan"
+            ],
+            "description": "Semantic network entity type"
+          },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "production",
+              "staging",
+              "dev",
+              "unknown"
+            ],
+            "description": "Environment classification from tags"
+          },
+          "tags": {
+            "type": "string",
+            "description": "JSON string of resource tags"
+          },
+          "provisioned_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Resource creation time (ISO 8601)"
+          },
+          "estimated_monthly_cost": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Estimated monthly cost in USD"
+          },
+          "private_ip": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Private IP address if applicable"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current resource status"
+          },
+          "cpu_avg_pct": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Daily average CPU utilization percentage over 14 days (5-min intervals), or real-time from top -bn1. null if unavailable."
+          },
+          "network_mb_per_day": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Network I/O (in+out) in MB per day. From cloud monitoring API (14-day avg) or real-time rate sample (/proc/net/dev 60s apart, exclude lo, extrapolate to 24h). null if unavailable."
+          },
+          "has_human_login": {
+            "type": "boolean",
+            "description": "Whether any human login was detected in last 30 days (excluding automation accounts)"
+          },
+          "virt_type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "lxc",
+              "kvm",
+              "bare-metal",
+              "unknown",
+              null
+            ],
+            "description": "Virtualization type detected for compute resources. null for non-compute types."
+          },
+          "owner_status": {
+            "type": "string",
+            "enum": [
+              "active_owner",
+              "orphaned",
+              "untagged",
+              "shared"
+            ],
+            "description": "Ownership classification status"
+          },
+          "coarse_filter_signals": {
+            "type": "object",
+            "description": "4 coarse filter signals collected from external systems",
+            "properties": {
+              "signal_cpu_avg": {
+                "type": "object",
+                "description": "CPU utilization signal. Threshold defined in prompts/signals-compute.md.",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "Daily average CPU percentage over 14 days (5-min intervals)"
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "The threshold value that was applied for this signal"
+                  },
+                  "threshold_unit": {
+                    "type": "string",
+                    "description": "Unit of the threshold (e.g. '%', 'MB/day', 'days')"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "Whether this signal exceeded its threshold (true = ACTIVE, resource excluded from zombie candidates)"
+                  },
+                  "reliability": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Data reliability: 1.0=direct API, 0.7=partial, 0.3=insufficient, 0.0=failed"
+                  },
+                  "data_source": {
+                    "type": "string",
+                    "description": "System that provided the data (e.g., CloudWatch, Prometheus, Datadog)"
+                  }
+                }
+              },
+              "signal_network_io": {
+                "type": "object",
+                "description": "Network I/O signal. Threshold defined in prompts/signals-compute.md.",
+                "properties": {
+                  "value": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "description": "Total network I/O (in+out) in MB/day"
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "The threshold value that was applied for this signal"
+                  },
+                  "threshold_unit": {
+                    "type": "string",
+                    "description": "Unit of the threshold"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "Whether this signal exceeded its threshold"
+                  },
+                  "reliability": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Data reliability: 1.0=direct API, 0.7=partial, 0.3=insufficient, 0.0=failed"
+                  },
+                  "data_source": {
+                    "type": "string",
+                    "description": "System that provided the data"
+                  }
+                }
+              },
+              "signal_human_login": {
+                "type": "object",
+                "description": "Human login signal. Threshold defined in prompts/signals-compute.md.",
+                "properties": {
+                  "value": {
+                    "type": "boolean",
+                    "description": "Whether any human login was detected"
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "description": "Time window in days"
+                  },
+                  "threshold_unit": {
+                    "type": "string",
+                    "description": "Unit of the threshold"
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "Whether this signal exceeded its threshold"
+                  },
+                  "reliability": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Data reliability"
+                  },
+                  "data_source": {
+                    "type": "string",
+                    "description": "System that provided the data"
+                  }
+                }
+              }
+            }
+          },
+          "low_confidence_signals": {
+            "type": "boolean",
+            "description": "Whether any signal has low reliability (< 0.7) or borderline values"
+          },
+          "context_info": {
+            "type": "object",
+            "description": "Additional context collected for zombie candidates",
+            "properties": {
+              "owner": {
+                "type": "object",
+                "description": "Owner information",
+                "properties": {
+                  "team": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Responsible team"
+                  },
+                  "contact": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Contact person or email"
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "How owner was identified (tags, audit logs, git blame, cloud tags)"
+                  }
+                }
+              },
+              "dependencies": {
+                "type": "object",
+                "description": "Service dependency relationships",
+                "properties": {
+                  "belongs_to_service": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Service or application this resource belongs to"
+                  },
+                  "dependent_resources": {
+                    "type": "array",
+                    "description": "Other resources that depend on this one",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "resource_id": {
+                          "type": "string"
+                        },
+                        "relationship": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "blast_radius_notes": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "What would break if this resource were deleted"
+                  }
+                }
+              },
+              "reachability": {
+                "type": "object",
+                "description": "Reachability assessment (compute resources only)",
+                "properties": {
+                  "reachable": {
+                    "type": "boolean",
+                    "description": "Whether the resource can be reached for further investigation"
+                  },
+                  "connection_method": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Available connection method (SSH key, SSM, cloud API)"
+                  },
+                  "network_accessible": {
+                    "type": "boolean",
+                    "description": "Whether the resource is in an accessible VPC/subnet"
+                  },
+                  "notes": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Additional reachability notes"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "resource_id",
+          "resource_type",
+          "entity_type",
+          "coarse_filter_signals"
+        ]
+      }
+    }
+  },
+  "required": [
+    "layer_a_input",
+    "layer_b_candidates_count",
+    "filter_rate",
+    "candidates"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User Decisions",
+  "description": "Per-resource decisions made by the human user (delete / keep_exempt / extend_observation)",
+  "type": "object",
+  "required": ["decided_at", "decided_by", "summary", "decisions"],
+  "properties": {
+    "decided_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when decisions were finalized"
+    },
+    "decided_by": {
+      "type": "string",
+      "description": "User ID of the human decision maker"
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total", "delete", "keep_exempt", "extend_observation", "cost_to_delete_monthly", "cost_to_keep_monthly"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0, "description": "Total decisions" },
+        "delete": { "type": "integer", "minimum": 0, "description": "Count of DELETE decisions" },
+        "keep_exempt": { "type": "integer", "minimum": 0, "description": "Count of KEEP_EXEMPT decisions" },
+        "extend_observation": { "type": "integer", "minimum": 0, "description": "Count of EXTEND_OBSERVATION decisions" },
+        "cost_to_delete_monthly": { "type": "number", "minimum": 0, "description": "Total monthly cost of resources marked DELETE" },
+        "cost_to_keep_monthly": { "type": "number", "minimum": 0, "description": "Total monthly cost of resources marked KEEP_EXEMPT" }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Per-resource user decisions",
+      "items": {
+        "type": "object",
+        "required": ["resource_id", "decision", "decided_at"],
+        "properties": {
+          "resource_id": { "type": "string", "description": "Unique resource identifier" },
+          "decision": {
+            "type": "string",
+            "enum": ["delete", "keep_exempt", "extend_observation"],
+            "description": "Human's final decision for this resource"
+          },
+          "exempt_duration": {
+            "type": "string",
+            "description": "Exemption duration for keep_exempt: '30d', '90d', 'permanent', or null"
+          },
+          "extend_days": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Additional observation days for extend_observation, 0 if not applicable"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Human-provided reason for the decision"
+          },
+          "decided_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO8601 timestamp for this individual decision"
+          }
+        }
+      }
+    }
+  }
+}

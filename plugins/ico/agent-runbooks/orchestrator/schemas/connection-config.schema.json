@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["methods"],
+  "additionalProperties": false,
+  "properties": {
+    "methods": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "kubernetes": {
+          "type": "object",
+          "required": ["context"],
+          "additionalProperties": false,
+          "properties": {
+            "context": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Kubernetes context name"
+            },
+            "node": {
+              "type": "string",
+              "description": "Node IP or hostname to SSH into for kubectl access"
+            }
+          }
+        },
+        "ssh": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hosts": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "description": "Compute instances to scan directly over SSH (NOT the K8s node)"
+            },
+            "key": {
+              "type": "string",
+              "description": "Path to SSH private key"
+            },
+            "user": {
+              "type": "string",
+              "default": "root",
+              "description": "SSH username"
+            }
+          }
+        },
+        "cloud_api": {
+          "type": "object",
+          "required": ["provider"],
+          "additionalProperties": false,
+          "properties": {
+            "provider": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Cloud provider name"
+            },
+            "account": {
+              "type": "string",
+              "description": "Account ID or project name"
+            },
+            "region": {
+              "type": "string",
+              "description": "Region to scan"
+            }
+          }
+        },
+        "teleport": {
+          "type": "object",
+          "required": ["cluster"],
+          "additionalProperties": false,
+          "properties": {
+            "cluster": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Teleport cluster name"
+            },
+            "user": {
+              "type": "string",
+              "description": "Teleport username"
+            }
+          }
+        },
+        "ansible": {
+          "type": "object",
+          "required": ["inventory"],
+          "additionalProperties": false,
+          "properties": {
+            "inventory": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Inventory file path or host group name"
+            }
+          }
+        }
+      }
+    },
+    "discovery_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if user wants full discovery (no specific targets named)"
+    }
+  }
+}

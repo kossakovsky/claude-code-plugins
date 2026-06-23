@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Per-Resource Isolation Plan",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "resource_id": { "type": "string" },
+        "resource_type": { "type": "string", "enum": ["VM", "DBInstance", "Cache", "K8sWorkload", "K8sService", "K8sCronJob", "LoadBalancer", "ElasticIP", "K8sConfig"] },
+        "entity_type": { "type": "string" },
+        "environment": { "type": "string", "enum": ["dev", "staging", "production"] },
+        "suspect_level": { "type": "string", "enum": ["high", "medium"] },
+        "zombie_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "priority": { "type": "number", "minimum": 0, "maximum": 1 },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "generated_by": { "type": "string" }
+      },
+      "required": ["resource_id", "resource_type", "entity_type", "environment", "suspect_level", "zombie_score", "priority", "generated_at", "generated_by"]
+    },
+    "isolation_strategy": {
+      "type": "object",
+      "properties": {
+        "method_id": { "type": "string" },
+        "method_name": { "type": "string" },
+        "description": { "type": "string" },
+        "rationale": { "type": "string" }
+      },
+      "required": ["method_id", "method_name", "description", "rationale"]
+    },
+    "isolation_steps": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "step": { "type": "integer" },
+          "title": { "type": "string" },
+          "action": { "type": "string" },
+          "command_hint": { "type": "string" },
+          "verification": { "type": "string" }
+        },
+        "required": ["step", "title", "action", "verification"]
+      }
+    },
+    "pre_checklist": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "item": { "type": "string" },
+          "check_command": { "type": "string" },
+          "status": { "type": "string", "enum": ["MUST_PASS", "SHOULD_PASS"] },
+          "reason": { "type": "string" }
+        },
+        "required": ["item", "check_command", "status", "reason"]
+      }
+    },
+    "rollback_plan": {
+      "type": "object",
+      "properties": {
+        "method_id": { "type": "string" },
+        "method_name": { "type": "string" },
+        "description": { "type": "string" },
+        "estimated_time": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": { "type": "integer" },
+              "title": { "type": "string" },
+              "action": { "type": "string" },
+              "command_hint": { "type": "string" }
+            },
+            "required": ["step", "title", "action"]
+          }
+        },
+        "auto_trigger_conditions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["method_id", "method_name", "description", "estimated_time", "steps"]
+    },
+    "observation_config": {
+      "type": "object",
+      "properties": {
+        "observation_period_days": { "type": "integer", "minimum": 3 },
+        "observation_period_rationale": { "type": "string" },
+        "metrics_to_monitor": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_name": { "type": "string" },
+              "source": { "type": "string" },
+              "threshold_type": { "type": "string", "enum": ["baseline_drift", "absolute"] },
+              "threshold_value": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "required": ["metric_name", "source", "threshold_type", "description"]
+          }
+        },
+        "observation_success_criteria": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "auto_rollback_triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "trigger_id": { "type": "string" },
+              "severity": { "type": "string", "enum": ["P0", "P1", "P2"] },
+              "condition": { "type": "string" },
+              "action": { "type": "string" }
+            },
+            "required": ["trigger_id", "severity", "condition", "action"]
+          }
+        }
+      },
+      "required": ["observation_period_days", "observation_period_rationale", "metrics_to_monitor", "observation_success_criteria", "auto_rollback_triggers"]
+    },
+    "risk_assessment": {
+      "type": "object",
+      "properties": {
+        "critical_dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dependent_resource": { "type": "string" },
+              "relationship_type": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "risk_level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+              "mitigation": { "type": "string" }
+            },
+            "required": ["dependent_resource", "relationship_type", "confidence", "risk_level", "mitigation"]
+          }
+        },
+        "blast_radius_summary": {
+          "type": "object",
+          "properties": {
+            "affected_services_count": { "type": "integer" },
+            "affected_resources_count": { "type": "integer" },
+            "critical_path_detected": { "type": "boolean" },
+            "critical_path_description": { "type": "string" },
+            "unknown_dependencies": { "type": "boolean" }
+          },
+          "required": ["affected_services_count", "affected_resources_count", "critical_path_detected", "unknown_dependencies"]
+        },
+        "isolation_side_effects": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "special_warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["critical_dependencies", "blast_radius_summary", "isolation_side_effects", "special_warnings"]
+    },
+    "quality_checks": {
+      "type": "object",
+      "properties": {
+        "completeness": {
+          "type": "object",
+          "properties": {
+            "method_assigned": { "type": "boolean" },
+            "steps_documented": { "type": "boolean" },
+            "rollback_plan_complete": { "type": "boolean" },
+            "observation_configured": { "type": "boolean" },
+            "dependency_analyzed": { "type": "boolean" }
+          },
+          "required": ["method_assigned", "steps_documented", "rollback_plan_complete", "observation_configured", "dependency_analyzed"]
+        },
+        "consistency_checks": {
+          "type": "object",
+          "properties": {
+            "method_matches_resource_type": { "type": "boolean" },
+            "method_matches_environment": { "type": "boolean" },
+            "rollback_time_realistic": { "type": "boolean" },
+            "observation_period_justified": { "type": "boolean" }
+          },
+          "required": ["method_matches_resource_type", "method_matches_environment", "rollback_time_realistic", "observation_period_justified"]
+        }
+      },
+      "required": ["completeness", "consistency_checks"]
+    }
+  },
+  "required": ["metadata", "isolation_strategy", "isolation_steps", "pre_checklist", "rollback_plan", "observation_config", "risk_assessment", "quality_checks"]
+}

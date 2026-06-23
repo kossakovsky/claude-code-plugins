@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deletion Report",
+  "description": "Final deletion execution report",
+  "type": "object",
+  "required": ["execution_id", "decision_id"],
+  "properties": {
+    "execution_id": {
+      "type": "string",
+      "description": "Deletion execution unique identifier, format: delete-{YYYYMMDD}-{seq}"
+    },
+    "decision_id": {
+      "type": "string",
+      "description": "Associated Phase 5 decision ID"
+    },
+    "pre_flight_result": {
+      "type": "string",
+      "enum": ["passed", "blocked", "warning"],
+      "description": "Pre-deletion re-evaluation result"
+    },
+    "pre_flight_checks": {
+      "type": "array",
+      "description": "Detailed results for each check item"
+    },
+    "backup_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string"
+          },
+          "backup_type": {
+            "type": "string"
+          },
+          "backup_id": {
+            "type": "string"
+          },
+          "backup_size_gb": {
+            "type": "number"
+          },
+          "backup_completed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "verification_result": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Backup creation records"
+    },
+    "deletion_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string"
+          },
+          "deletion_steps": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "deletion_completed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletion_method": {
+            "type": "string"
+          },
+          "dependencies_deleted": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Deletion execution records"
+    },
+    "rollback_window": {
+      "type": "object",
+      "properties": {
+        "window_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "window_duration_days": {
+          "type": "integer"
+        },
+        "recovery_methods": {
+          "type": "object"
+        }
+      },
+      "description": "Recovery window configuration"
+    },
+    "cost_savings": {
+      "type": "object",
+      "description": "Cost savings report"
+    },
+    "audit_log": {
+      "type": "array",
+      "description": "Audit log (complete timeline records)"
+    },
+    "post_deletion_monitoring": {
+      "type": "object",
+      "description": "Post-deletion monitoring configuration (30-day silence period)"
+    }
+  }
+}

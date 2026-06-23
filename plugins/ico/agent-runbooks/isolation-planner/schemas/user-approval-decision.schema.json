@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User Approval Decision for Isolation Plans",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "decision_timestamp": { "type": "string", "format": "date-time" },
+        "user_id": { "type": "string" },
+        "approval_status": { "type": "string", "enum": ["approved", "rejected", "partial_approval"] }
+      },
+      "required": ["decision_timestamp", "approval_status"]
+    },
+    "approved_resources": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of resource_ids approved for isolation"
+    },
+    "skipped_resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": { "type": "string" },
+          "reason": { "type": "string" }
+        },
+        "required": ["resource_id", "reason"]
+      },
+      "description": "Resources user chose to skip with reasons"
+    },
+    "adjusted_isolation_methods": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "resource_id -> new_method_id for any user-adjusted methods"
+    },
+    "adjusted_observation_periods": {
+      "type": "object",
+      "additionalProperties": { "type": "integer" },
+      "description": "resource_id -> new_observation_period_days"
+    },
+    "batch_plan_approved": {
+      "type": "boolean",
+      "description": "Whether user approved the global batch plan and execution order"
+    },
+    "batch_plan_adjustments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "batch_id": { "type": "integer" },
+          "adjustment": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      },
+      "description": "Any user-requested adjustments to batch ordering or parallelization"
+    },
+    "user_notes": {
+      "type": "string",
+      "description": "Additional notes or concerns from user"
+    },
+    "approval_conditions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Any conditions user imposed on execution (e.g., 'only during maintenance window', 'notify team before starting')"
+    }
+  },
+  "required": ["metadata", "approved_resources", "batch_plan_approved"]
+}

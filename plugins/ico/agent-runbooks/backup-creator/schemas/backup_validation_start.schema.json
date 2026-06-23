@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Validation Start Schema",
+  "description": "Initial validation results from validate_input step, confirming all resources are readable and valid before backup creation begins",
+  "properties": {
+    "validation_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when validation was performed"
+    },
+    "decision_id": {
+      "type": "string",
+      "description": "Phase 5 confirmation decision ID from decision-handler"
+    },
+    "total_resources": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of resources to back up"
+    },
+    "resources_by_type": {
+      "type": "object",
+      "additionalProperties": {"type": "integer"},
+      "description": "Resource count grouped by entity_type (e.g., CloudVM, RDS, K8sDeployment)"
+    },
+    "resource_ids": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of validated resource IDs"
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["passed", "failed"],
+      "description": "Overall validation status"
+    },
+    "error": {
+      "type": ["string", "null"],
+      "description": "Error message if validation failed"
+    }
+  },
+  "required": [
+    "validation_timestamp",
+    "decision_id",
+    "total_resources",
+    "resources_by_type",
+    "resource_ids",
+    "validation_status"
+  ]
+}

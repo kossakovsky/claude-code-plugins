@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Strategies Schema",
+  "description": "Backup strategy selections for all resources: method, retention, cost estimates, and recovery hints per resource",
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when strategies were generated"
+    },
+    "total_resources": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {"type": "string"},
+          "entity_type": {"type": "string"},
+          "backup_strategy": {
+            "type": "object",
+            "properties": {
+              "entity_type": {"type": "string"},
+              "backup_method": {"type": "string"},
+              "retention_days": {"type": "integer", "minimum": 1, "maximum": 90},
+              "backup_window_end": {"type": "string", "format": "date-time"},
+              "cost_estimate_daily": {"type": "number", "minimum": 0},
+              "cost_estimate_total": {"type": "number", "minimum": 0},
+              "recovery_hints": {
+                "type": "object",
+                "properties": {
+                  "method": {"type": "string"},
+                  "instructions": {"type": "string"},
+                  "estimated_time_minutes": {"type": "integer", "minimum": 1},
+                  "pre_requisites": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  }
+                },
+                "required": ["method", "instructions", "estimated_time_minutes"]
+              }
+            },
+            "required": ["entity_type", "backup_method", "retention_days", "backup_window_end", "cost_estimate_daily", "cost_estimate_total", "recovery_hints"]
+          }
+        },
+        "required": ["resource_id", "entity_type", "backup_strategy"]
+      }
+    }
+  },
+  "required": ["generated_at", "total_resources", "resources"]
+}

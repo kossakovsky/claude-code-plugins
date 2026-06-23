@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Pre-Backup Validation Schema",
+  "description": "Pre-backup validation results for all resources: existence check, isolation state, API accessibility, storage quota",
+  "properties": {
+    "validation_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when validation was performed"
+    },
+    "total_validated": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of resources validated"
+    },
+    "passed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of resources that passed validation"
+    },
+    "failed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of resources that failed validation"
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {"type": "string"},
+          "pre_backup_validation": {
+            "type": "object",
+            "properties": {
+              "timestamp": {"type": "string", "format": "date-time"},
+              "status": {
+                "type": "string",
+                "enum": ["passed", "warning", "failed"]
+              },
+              "checks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string"},
+                    "passed": {"type": "boolean"}
+                  },
+                  "required": ["name", "passed"]
+                }
+              },
+              "warnings": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "error": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": ["timestamp", "status", "checks"]
+          }
+        },
+        "required": ["resource_id", "pre_backup_validation"]
+      }
+    }
+  },
+  "required": ["validation_timestamp", "total_validated", "passed", "failed", "resources"]
+}

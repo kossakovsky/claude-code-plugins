@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Protection Schema",
+  "description": "Protection measures applied to verified backups: tags, lifecycle rules, encryption (mandatory for K8s Secrets), and access control",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when protection was applied"
+    },
+    "total_protected": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of backups protected"
+    },
+    "protected_success": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "protected_failed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {"type": "string"},
+          "backup_protection": {
+            "type": "object",
+            "properties": {
+              "timestamp": {"type": "string", "format": "date-time"},
+              "backup_id": {"type": "string"},
+              "resource_type": {
+                "type": "string",
+                "enum": ["compute", "database", "cache", "storage", "network", "k8s_workload", "k8s_orphan", "k8s_service", "k8s_secret"]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["success", "partial_success", "failed"]
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "action": {"type": "string"},
+                    "status": {"type": "string"},
+                    "tags_count": {"type": "integer"},
+                    "expiration_days": {"type": "integer"},
+                    "kms_key_id": {"type": "string"},
+                    "is_k8s_secret": {"type": "boolean"},
+                    "encryption_mandatory": {"type": "boolean"}
+                  },
+                  "required": ["action", "status"]
+                }
+              },
+              "k8s_secret_protection": {
+                "type": "object",
+                "properties": {
+                  "kms_encrypted": {"type": "boolean"},
+                  "kms_key_arn": {"type": "string"},
+                  "access_restricted": {"type": "boolean"},
+                  "audit_logged": {"type": "boolean"}
+                }
+              },
+              "error": {"type": ["string", "null"]}
+            },
+            "required": ["timestamp", "backup_id", "status", "actions"]
+          }
+        },
+        "required": ["resource_id", "backup_protection"]
+      }
+    }
+  },
+  "required": ["timestamp", "total_protected", "protected_success", "protected_failed", "resources"]
+}

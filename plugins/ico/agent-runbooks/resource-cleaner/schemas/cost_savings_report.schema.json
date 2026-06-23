@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cost Savings Report",
+  "description": "Cost savings report",
+  "type": "object",
+  "required": ["execution_id", "deletion_date"],
+  "properties": {
+    "execution_id": {
+      "type": "string",
+      "description": "Deletion execution unique identifier"
+    },
+    "deletion_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Deletion date"
+    },
+    "resources_deleted": {
+      "type": "integer",
+      "description": "Number of resources deleted"
+    },
+    "immediate_savings": {
+      "type": "object",
+      "description": "Immediate cost savings",
+      "properties": {
+        "monthly_cost": {
+          "type": "number"
+        },
+        "annual_cost": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string",
+          "default": "USD"
+        }
+      }
+    },
+    "lifecycle_cost": {
+      "type": "object",
+      "description": "Lifecycle cost statistics",
+      "properties": {
+        "total_cost_lifetime": {
+          "type": "number"
+        },
+        "active_period_cost": {
+          "type": "number"
+        },
+        "zombie_period_cost": {
+          "type": "number"
+        },
+        "zombie_period_days": {
+          "type": "integer"
+        }
+      }
+    },
+    "backup_cost": {
+      "type": "object",
+      "description": "Backup storage cost",
+      "properties": {
+        "backup_type": {
+          "type": "string"
+        },
+        "retention_days": {
+          "type": "integer"
+        },
+        "total_cost": {
+          "type": "number"
+        }
+      }
+    },
+    "net_savings_30d": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Calculation assumptions"
+    }
+  }
+}

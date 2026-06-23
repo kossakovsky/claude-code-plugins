@@ -1,0 +1,329 @@
+name: orchestrator
+description: >-
+  Cloud infrastructure cost optimization lifecycle -- identifies idle and
+  underutilized resources, orchestrates safe isolation and observation,
+  and manages the approve-decommission workflow to reduce cloud spend.
+  Trigger phrases: "cost optimization", "infra cost", "zombie resources",
+  "idle resources", "reduce cloud cost", "cloud waste".
+
+input_params:
+  - name: run_dir
+    type: string
+    required: true
+    description: Workspace root directory
+  - name: ssh_key_path
+    type: string
+    required: false
+    description: SSH key path for cloud API calls
+  - name: task_id
+    type: string
+    required: true
+    description: Task ID for progress tracking
+
+steps:
+  # ===================================================================
+  # Pre-flight: confirm scope with user
+  # ===================================================================
+
+  - id: confirm_scope
+    depends_on: []
+    type: inline
+    description: Confirm scan scope with user
+    prompt: |
+      Ask the user what to scan. One question at a time.
+      1. What environment? (prod/staging/dev/all)
+      2. Any resource types to include or exclude?
+      Prefer multiple choice. Skip if user already specified.
+
+  - id: confirm_connection
+    depends_on: [confirm_scope]
+    type: inline
+    description: Collect concrete connection details
+    prompt_file: prompts/confirm-connection.prompt.md
+    output:
+      - schema: schemas/connection-config.schema.json
+        file: connection_config.json
+
+  - id: confirm_monitoring
+    depends_on: [confirm_connection]
+    type: inline
+    description: Confirm monitoring and CI/CD data sources
+    prompt: |
+      Ask two questions:
+
+      1. "Do you have a monitoring system for historical metrics?"
+         Options: Prometheus, Datadog, CloudWatch, Azure Monitor, GCP Monitoring, or none.
+         If none — warn that only real-time snapshots will be used.
+
+      2. "Do you use a CI/CD or GitOps tool for deployments?"
+         Options: ArgoCD, FluxCD, Jenkins, GitLab CI, GitHub Actions, other, or none.
+         If they name one, ask how to access it (URL, token, namespace).
+
+      Record both in {run_dir}/connection_config.json under `monitoring` and `cicd`.
+
+  - id: generate_intent
+    depends_on: [confirm_monitoring]
+    type: inline
+    description: Generate intent_detection.json from user input
+    prompt: |
+      Write {run_dir}/intent_detection.json:
+      - entity_types: list of resource types to scan
+      - scope: {account, region, tag_filters}
+      - exclusions: list of excluded resource_ids or tags
+    output:
+      - schema: schemas/intent-detection.schema.json
+        file: intent_detection.json
+
+  - id: generate_plan
+    depends_on: [generate_intent]
+    type: inline
+    description: Dispatch Plan Agent with the orchestration template, present plan, wait for confirmation
+    prompt: |
+      1. Read the orchestration plan template: `prompts/orchestration-plan.agent.md`
+      2. Fill in any placeholders with info from intent_detection.json and user discussion
+      3. Use the Agent tool (subagent_type=general-purpose) with the filled template to produce an execution plan
+      4. Save the plan output verbatim to {run_dir}/execution_plan.md
+      5. Present the plan to user using the Write tool as markdown. Show: phase overview table, estimated duration, review checkpoints
+      6. WAIT for user confirmation before proceeding to execution.
+
+  # ===================================================================
+  # Phase 1: Discover & Score
+  # ===================================================================
+
+  - id: collect_metrics
+    depends_on: [generate_plan]
+    type: agent
+    description: Discover resources and apply 3-signal coarse filter
+    prompt: |
+      Use the Agent tool (subagent_type=general-purpose) to load the ico:metrics-collector skill.
+      Do NOT add extra commands, signal definitions, or thresholds.
+
+      Execute ico:metrics-collector with:
+      - run_dir: {run_dir}
+      - ssh_key_path: {ssh_key_path}
+      - task_id: {task_id}
+      - connection_config: read {run_dir}/connection_config.json
+
+  - id: screen_resources
+    depends_on: [collect_metrics]
+    type: agent
+    description: Score and rank zombie candidates
+    prompt: |
+      Use the Agent tool (subagent_type=general-purpose) to load the ico:resource-screener skill.
+
+      Execute ico:resource-screener with:
+      - run_dir: {run_dir}
+      - task_id: {task_id}
+
+  - id: review_gate
+    depends_on: [screen_resources]
+    type: inline
+    description: Present results and wait for user (BLOCKING)
+    prompt: |
+      Read {run_dir}/analysis/suspect_assessment.json.
+
+      Present to user via the Write tool, sorted by estimated_monthly_cost descending:
+      - Total candidates, high/medium/low counts
+      - Top candidates: resource_id, suspect_level, zombie_score, cost, key signals
+
+      ASK: which resources should enter deep scan?
+
+      WAIT for user response. This is BLOCKING.
+
+      Write {run_dir}/phase1_review_decision.json:
+      - resources_for_deep_scan: [resource_ids]
+      - skip_resources: [resource_ids]
+    output:
+      - schema: schemas/phase1-review-decision.schema.json
+        file: phase1_review_decision.json
+
+  # ===================================================================
+  # Phase 2: Deep Scan & Isolate
+  # ===================================================================
+
+  - id: deep_scan
+    depends_on: [review_gate]
+    type: agent
+    description: Deep scan approved candidates (one per machine, max 8 concurrent)
+    prompt: |
+      Read {run_dir}/phase1_review_decision.json.
+
+      Use the Agent tool (subagent_type=general-purpose) to load the ico:deep-scanner skill.
+      Do NOT add extra commands or collection steps -- the ico:deep-scanner skill defines the complete collection checklist.
+
+      Execute ico:deep-scanner for each resource in resources_for_deep_scan:
+      - run_dir: {run_dir}
+      - ssh_key_path: {ssh_key_path}
+      - Launch one agent per resource, max 8 concurrent
+      - Each writes analysis/deep_scan_{resource_id}.json
+
+  - id: phase_e_report
+    depends_on: [deep_scan]
+    type: agent
+    description: Generate HTML report from deep scan data
+    prompt: |
+      Read `$PLUGINS/ico/skills/orchestrator/prompts/report.prompt.md`.
+      Use the Agent tool (subagent_type=general-purpose) and pass the EXACT content of
+      report.prompt.md as the prompt. Do NOT write your own prompt — send the file content
+      verbatim. The sub-agent must write {run_dir}/reports/report.html.
+
+  - id: phase_e_select
+    depends_on: [phase_e_report]
+    type: inline
+    description: Present deep scan report + ask user which resources to isolate (BLOCKING)
+    prompt: |
+      Verify `{run_dir}/reports/report.html` exists. If not, go back to phase_e_report.
+
+      Open the HTML report and present it. Do NOT summarize deep scan findings yourself —
+      the report IS the summary. Do NOT change the verdict, suspect_level, or zombie_score
+      from suspect_assessment.json.
+
+      ASK: which resources should proceed to isolation planning?
+      WAIT for user. BLOCKING.
+
+      Write {run_dir}/isolation_selection.json
+
+  - id: phase_f_isolation
+    depends_on: [phase_e_select]
+    type: agent
+    description: Generate isolation plans
+    prompt: |
+      Use the Agent tool (subagent_type=general-purpose) to load the ico:isolation-planner skill.
+
+      Execute ico:isolation-planner with:
+      - run_dir: {run_dir}
+      - task_id: {task_id}
+      - ssh_key_path: {ssh_key_path}
+
+  - id: isolation_review_gate
+    depends_on: [phase_f_isolation]
+    type: inline
+    description: Present isolation plan, wait for approval (BLOCKING)
+    prompt: |
+      Read {run_dir}/analysis/isolation_batch_plan.json.
+
+      Compile the isolation plan as MARKDOWN via the Write tool. The markdown must include:
+
+      ## Isolation Plan for [hostname] ([IP])
+      - **Method**: iptables DROP (description)
+      - **Rollback**: iptables-restore, estimated < N minutes
+      - **Pre-checks**: [list from plan]
+      - **Observation**: N days
+
+      ## Batch Sequence
+      | Step | VM | Rationale |
+      |------|-----|-----------|
+      | ... | ... | ... |
+
+      ## Risk Assessment
+      - [key risks from plan]
+
+      ASK: approve isolation plan?
+
+      WAIT for user confirmation. BLOCKING.
+
+      Write {run_dir}/phase2_review_decision.json.
+    output:
+      - schema: schemas/phase2-review-decision.schema.json
+        file: phase2_review_decision.json
+
+  - id: execute_isolation
+    depends_on: [isolation_review_gate]
+    type: agent
+    description: Execute isolation and observation
+    prompt: |
+      Read {run_dir}/phase2_review_decision.json. If not approved, stop.
+
+      Use the Agent tool (subagent_type=general-purpose) to load the ico:isolation-executor skill.
+
+      Execute ico:isolation-executor with:
+      - run_dir: {run_dir}
+      - ssh_key_path: {ssh_key_path}
+      - environment: from scan_plan
+      - batch_plan: analysis/isolation_batch_plan.json
+      - isolation_plans: analysis/isolation_plan_*.json
+
+  # ===================================================================
+  # Phase 3: Decide & Delete
+  # ===================================================================
+
+  - id: decision
+    depends_on: [execute_isolation]
+    type: agent
+    description: Present decision report and collect user decisions
+    prompt: |
+      Use the Agent tool (subagent_type=general-purpose) to load the ico:decision-handler skill.
+
+      Execute ico:decision-handler with:
+      - run_dir: {run_dir}
+      - task_id: {task_id}
+      - ssh_key_path: {ssh_key_path}
+      - Merge deep_scan + observation results, present report, collect user decisions
+      - Write confirm/phase5_decision.json with delete_resources array for each resource marked DELETE
+      - Write backup reports for DELETE resources to delete/backup_*.json
+      - Do NOT dispatch backup-creator or resource-cleaner -- wait for Phase J delete review gate
+
+  - id: phase_j_delete_review
+    depends_on: [decision]
+    type: inline
+    description: Present delete plan to user for final approval (BLOCKING)
+    prompt: |
+      Read {run_dir}/confirm/phase5_decision.json.
+
+      For each resource marked DELETE, read its backup report and deletion plan.
+
+      Compile a DELETE PLAN as markdown via the Write tool. Include:
+      - Per resource: resource_id, hostname, estimated_monthly_cost savings
+      - Backup strategy used, backup verification status
+      - Deletion method, rollback window
+      - Total cost savings if all approved
+
+      ASK: approve deletion plan?
+
+      WAIT for user response. BLOCKING.
+
+      Write {run_dir}/phase_j_delete_approval.json:
+      - approved_resources: [resource_ids]
+      - rejected_resources: [resource_ids]
+
+  - id: final_report
+    depends_on: [phase_j_delete_review]
+    type: inline
+    description: Deliver final report
+    prompt: |
+      Read {run_dir}/delete/deletion_report.json and cost_savings_report.json.
+      Also read ALL {run_dir}/analysis/deep_scan_*.json for deep-scanned resources.
+
+      Phase 1 -- Per-machine reports:
+      For EACH deep-scanned resource, generate a Markdown section with 5 Tabs:
+
+      **Tab 0 "Traffic"** -- Service Topology:
+      - One node for the VM (id=resource_id, label=hostname, type=service, status=healthy)
+      - For each edge in traffic_graph.edges, create peer nodes:
+        - Process known -> label="IP:port process_name", type=src_service_type
+        - Only port known -> label="IP:port", type=service
+        - Client IP only -> label="IP (client)", type=gateway
+        - Unmapped -> label="IP:port", type=service, status=degraded
+      - Edge: from=src node id, to=dst node id, label="{rate_kbps} Kb/s", throughput="{rate_kbps} Kb/s"
+      - Edge status: "healthy" for business, null for infra, "warning" for unmapped
+
+      **Tab 1 "Services"** -- with:
+      - Table: processes[] (PID, user, CPU%, MEM%, command), filter out systemd/sshd/kthread
+      - List: listening_ports[] as items {name: "{port} {process}", status: "ok"}
+      - Callout if local_databases non-empty: "Local databases: ..."
+
+      **Tab 2 "Scheduled Tasks"** -- with:
+      - Table: crontab_entries[] (user, schedule, command)
+      - Table: systemd_timers[] (unit, next, schedule)
+
+      **Tab 3 "Storage"** -- with:
+      - List: disk_partitions[] {key: mount, value: "used/size (use%)"}
+      - Callout if disk_usage has results with top-5 large directories
+
+      **Tab 4 "Ownership"** -- with:
+      - List: business.owner, business.team, business.environment, etc.
+      - Table: estimated_monthly_cost, spec.cpu_cores, spec.memory_gb, spec.disk_gb
+
+      Phase 2 -- Summary:
+      Compile final summary: scanned count, deleted count, cost savings, kept/exempt.
+      Deliver via the Write tool with a summary dashboard. Include recommended next steps.

@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Merged View",
+  "description": "Unified view of all zombie resource candidates (deep scan + observation merged), sorted by cost descending",
+  "type": "object",
+  "required": ["generated_at", "total_candidates", "observation_summary", "total_monthly_cost", "total_yearly_cost", "resources"],
+  "properties": {
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when the merged view was generated"
+    },
+    "total_candidates": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of unique candidate resources"
+    },
+    "observation_summary": {
+      "type": "object",
+      "required": ["passed", "failed", "uncertain", "pending"],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "uncertain": { "type": "integer", "minimum": 0 },
+        "pending": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "total_monthly_cost": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Sum of monthly cost across all candidates"
+    },
+    "total_yearly_cost": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Sum of yearly cost across all candidates"
+    },
+    "resources": {
+      "type": "array",
+      "description": "Per-resource merged profile, sorted by cost.monthly descending",
+      "items": {
+        "type": "object",
+        "required": ["resource_id", "resource_type", "entity_type", "cloud_provider", "environment", "cost", "observation", "recommendation", "recommendation_reason"],
+        "properties": {
+          "resource_id": { "type": "string", "description": "Unique resource identifier" },
+          "resource_name": { "type": "string", "description": "Human-readable resource name" },
+          "resource_type": { "type": "string", "description": "Resource type (e.g., CloudVM, RDS)" },
+          "entity_type": { "type": "string", "description": "Cloud provider entity type (e.g. VM instance)" },
+          "cloud_provider": {
+            "type": "string",
+            "enum": ["aws", "aliyun", "k8s", "unknown"],
+            "description": "Cloud provider"
+          },
+          "environment": {
+            "type": "string",
+            "enum": ["dev", "staging", "production"],
+            "description": "Environment tier"
+          },
+          "spec": {
+            "type": "object",
+            "description": "Resource specifications",
+            "properties": {
+              "cpu": { "type": "number" },
+              "memory_gb": { "type": "number" },
+              "disk_gb": { "type": "number" }
+            }
+          },
+          "actual_utilization": {
+            "type": "object",
+            "description": "Actual resource utilization metrics",
+            "properties": {
+              "cpu_pct": { "type": "number" },
+              "memory_pct": { "type": "number" }
+            }
+          },
+          "owner_detail": {
+            "type": "object",
+            "description": "Resource owner information",
+            "properties": {
+              "user_id": { "type": "string" },
+              "name": { "type": "string" }
+            }
+          },
+          "business_context": {
+            "type": "object",
+            "description": "Business context from deep scan",
+            "properties": {
+              "application": { "type": "string" },
+              "system": { "type": "string" },
+              "scheduled_tasks": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "cost": {
+            "type": "object",
+            "required": ["monthly", "yearly", "currency"],
+            "properties": {
+              "monthly": { "type": "number", "minimum": 0 },
+              "yearly": { "type": "number", "minimum": 0 },
+              "currency": { "type": "string", "default": "USD" }
+            }
+          },
+          "observation": {
+            "type": "object",
+            "required": ["result", "isolation_days", "alert_count", "complaint_count", "rollback_triggered", "anomaly_count"],
+            "properties": {
+              "result": {
+                "type": "string",
+                "enum": ["passed", "failed", "uncertain", "pending"],
+                "description": "Observation result from Phase 2"
+              },
+              "isolation_days": { "type": "integer", "minimum": 0 },
+              "alert_count": { "type": "integer", "minimum": 0 },
+              "complaint_count": { "type": "integer", "minimum": 0 },
+              "rollback_triggered": { "type": "boolean" },
+              "anomaly_count": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "recommendation": {
+            "type": "string",
+            "enum": ["delete", "keep", "extend_observation"],
+            "description": "AI preliminary recommendation"
+          },
+          "recommendation_reason": {
+            "type": "string",
+            "description": "Brief reasoning for the recommendation"
+          }
+        }
+      }
+    }
+  }
+}

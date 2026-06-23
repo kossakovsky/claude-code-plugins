@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sorted Resources",
+  "description": "Topologically sorted resource deletion order list",
+  "type": "object",
+  "required": ["sorted_resources"],
+  "properties": {
+    "sorted_resources": {
+      "type": "array",
+      "description": "Resource IDs sorted by dependency (no dependency deleted first)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "total_resources": {
+      "type": "integer",
+      "description": "Total number of sorted resources"
+    },
+    "unsortable_resources": {
+      "type": "array",
+      "description": "Resource IDs that could not be sorted due to circular dependencies",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

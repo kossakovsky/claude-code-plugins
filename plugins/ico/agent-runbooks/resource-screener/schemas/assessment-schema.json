@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Suspect Assessment Summary",
+  "description": "Consolidated output from Phase 1 Suspect layer (Layer D)",
+  "type": "object",
+  "required": [
+    "assessed_at",
+    "total_candidates",
+    "summary",
+    "self_check",
+    "candidates"
+  ],
+  "properties": {
+    "assessed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Assessment completion timestamp"
+    },
+    "total_candidates": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of candidates assessed"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "high_suspect",
+        "medium_suspect",
+        "low_suspect",
+        "average_zombie_score",
+        "total_estimated_monthly_savings"
+      ],
+      "properties": {
+        "high_suspect": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of high-level suspects"
+        },
+        "medium_suspect": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of medium-level suspects"
+        },
+        "low_suspect": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of low-level suspects"
+        },
+        "average_zombie_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Arithmetic mean of all zombie_scores"
+        },
+        "total_estimated_monthly_savings": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Sum of estimated monthly costs for high + medium suspects (USD)"
+        }
+      }
+    },
+    "self_check": {
+      "type": "object",
+      "required": ["passed", "gaps"],
+      "properties": {
+        "passed": {
+          "type": "boolean",
+          "description": "Whether all 8 blocking rules passed"
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule": {
+                "type": "string",
+                "description": "Rule ID (sc-001, sc-003, sc-006 to sc-011)"
+              },
+              "message": {
+                "type": "string",
+                "description": "Violation details"
+              }
+            }
+          },
+          "description": "List of failed self-check rules (empty if passed=true)"
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "resource_id",
+          "resource_type",
+          "suspect_level",
+          "zombie_score",
+          "priority",
+          "estimated_monthly_cost",
+          "owner_status",
+          "investigation_brief",
+          "suggested_next_step"
+        ],
+        "properties": {
+          "resource_id": {
+            "type": "string"
+          },
+          "resource_type": {
+            "type": "string",
+            "enum": [
+              "compute",
+              "storage",
+              "network",
+              "database",
+              "cache",
+              "k8s_workload",
+              "k8s_service",
+              "k8s_orphan",
+              "domain"
+            ]
+          },
+          "suspect_level": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "zombie_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "priority": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Ranking score (candidates sorted descending by this)"
+          },
+          "estimated_monthly_cost": {
+            "type": "number",
+            "minimum": 0
+          },
+          "owner_status": {
+            "type": "string",
+            "enum": ["active_owner", "orphaned", "untagged", "shared"]
+          },
+          "investigation_brief": {
+            "type": "string",
+            "minLength": 15,
+            "description": "2-3 sentence summary"
+          },
+          "suggested_next_step": {
+            "type": "string",
+            "description": "Recommended next action for this candidate"
+          }
+        }
+      },
+      "description": "Candidates sorted by priority (descending)"
+    }
+  },
+  "additionalProperties": false
+}

@@ -9,6 +9,18 @@
   },
   "plugins": [
     {
+      "name": "ico",
+      "description": "Infra Cost Optimizer — identify idle cloud resources, orchestrate safe isolation and observation, and manage approve-decommission workflows to reduce cloud spend",
+      "version": "2.0.0",
+      "author": {
+        "name": "KnoxOps"
+      },
+      "source": "./plugins/ico",
+      "category": "devops",
+      "tags": ["cloud", "cost-optimization", "finops", "zombie-resources", "infrastructure"],
+      "keywords": ["cloud", "cost", "finops", "zombie", "idle", "aws", "gcp", "azure", "kubernetes", "infrastructure", "devops", "sre", "optimization"]
+    },
+    {
       "name": "switch-provider",
       "description": "Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command",
       "version": "1.0.0",

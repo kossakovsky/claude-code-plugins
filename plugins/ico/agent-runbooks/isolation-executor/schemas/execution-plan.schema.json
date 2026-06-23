@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Execution Plan",
+  "description": "Phase 4 execution plan with observation period matrix and resource configuration",
+  "type": "object",
+  "properties": {
+    "execution_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when Phase 4 execution started"
+    },
+    "batch_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of batches in isolation_batch_plan"
+    },
+    "total_resources": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of resources across all batches"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["dev", "staging", "production"],
+      "description": "Environment tier for observation period matrix"
+    },
+    "observation_periods": {
+      "type": "object",
+      "description": "Per-resource observation period configuration",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "resource_id": { "type": "string" },
+          "observation_period_days": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Observation period in days (3/7/30 base, extended if seasonal tasks detected)"
+          },
+          "observation_start": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Observation start time (= isolation_executed_at)"
+          },
+          "observation_end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Observation end time (= isolation_executed_at + observation_period_days)"
+          },
+          "extended_reason": {
+            "type": "string",
+            "description": "Reason for extension (e.g., quarterly_task_detected, monthly_task_detected, annual_task_detected)"
+          }
+        },
+        "required": ["resource_id", "observation_period_days", "observation_start", "observation_end"]
+      }
+    }
+  },
+  "required": ["execution_started_at", "batch_count", "total_resources", "environment", "observation_periods"]
+}

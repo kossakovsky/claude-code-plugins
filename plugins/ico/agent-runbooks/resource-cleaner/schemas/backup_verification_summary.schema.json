@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Backup Verification Summary",
+  "description": "Backup creation result verification summary",
+  "type": "object",
+  "required": ["verification_timestamp", "can_proceed_with_deletion"],
+  "properties": {
+    "verification_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Verification timestamp"
+    },
+    "backup_summary_found": {
+      "type": "boolean",
+      "description": "Whether backup summary file was found"
+    },
+    "backup_strategies_found": {
+      "type": "boolean",
+      "description": "Whether backup strategies file was found"
+    },
+    "total_resources_to_delete": {
+      "type": "integer",
+      "description": "Total resources to delete"
+    },
+    "resources_with_valid_backup": {
+      "type": "integer",
+      "description": "Resources with valid backups"
+    },
+    "resources_missing_backup": {
+      "type": "integer",
+      "description": "Resources missing backups"
+    },
+    "resources_with_failed_backup": {
+      "type": "integer",
+      "description": "Resources with failed backups"
+    },
+    "can_proceed_with_deletion": {
+      "type": "boolean",
+      "description": "Whether deletion can proceed"
+    },
+    "per_resource": {
+      "type": "array",
+      "description": "Per-resource backup verification details",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string"
+          },
+          "backup_exists": {
+            "type": "boolean"
+          },
+          "backup_status": {
+            "type": "string",
+            "enum": ["success", "failed", "not_found"]
+          },
+          "backup_report_path": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "halt_reason": {
+      "type": "string",
+      "description": "Reason if deletion was halted"
+    }
+  }
+}

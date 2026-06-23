@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Execution Results",
+  "description": "Results of executing user decisions: delete dispatch, exempt tagging, and observation extension",
+  "type": "object",
+  "required": ["executed_at", "delete_results", "exempt_results", "extend_results"],
+  "properties": {
+    "executed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when execution completed"
+    },
+    "delete_results": {
+      "type": "object",
+      "required": ["total", "succeeded", "failed", "details"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0, "description": "Total resources with DELETE decision" },
+        "succeeded": { "type": "integer", "minimum": 0, "description": "Resources successfully backed up and deleted" },
+        "failed": { "type": "integer", "minimum": 0, "description": "Resources where backup or deletion failed" },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["resource_id", "backup_status", "deletion_status"],
+            "properties": {
+              "resource_id": { "type": "string" },
+              "backup_status": {
+                "type": "string",
+                "enum": ["success", "failed", "skipped"],
+                "description": "Backup result status"
+              },
+              "backup_detail": { "type": "string", "description": "Backup result details" },
+              "deletion_status": {
+                "type": "string",
+                "enum": ["success", "failed", "skipped"],
+                "description": "Deletion result status"
+              },
+              "deletion_detail": { "type": "string", "description": "Deletion result details" },
+              "error": { "type": "string", "description": "Error message if failed" }
+            }
+          }
+        }
+      }
+    },
+    "exempt_results": {
+      "type": "object",
+      "required": ["total", "resources"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0, "description": "Total resources with KEEP_EXEMPT decision" },
+        "resources": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of resource IDs marked as exempt"
+        }
+      }
+    },
+    "extend_results": {
+      "type": "object",
+      "required": ["total", "resources"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0, "description": "Total resources with EXTEND_OBSERVATION decision" },
+        "resources": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of resource IDs with extended observation"
+        }
+      }
+    }
+  }
+}

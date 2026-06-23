@@ -1,0 +1,216 @@
+name: decision-handler
+description: |
+  Final phase of the zombie resource cleanup workflow. Presents all Phase 2
+  findings (deep scan + observation) to the user for final human decision,
+  executes confirmed deletions, and delivers a cost savings report.
+
+input_params:
+  - name: run_dir
+    type: string
+    required: true
+    description: Workspace root directory for file passing between agents
+
+  - name: task_id
+    type: string
+    required: true
+    description: Task ID for progress tracking
+
+  - name: ssh_key_path
+    type: string
+    required: false
+    description: SSH key path for cloud provider access
+
+outputs:
+  - path: decision/
+    description: Phase 3 decision results directory
+  - path: decision/merged_view.json
+    description: Unified view of all candidates (deep scan + observation merged, sorted by cost desc)
+  - path: decision/user_decisions.json
+    description: Per-resource decisions made by the user
+  - path: decision/execution_results.json
+    description: Results of executing user decisions
+  - path: confirm/phase5_decision.json
+    description: Handoff file for backup-creator and resource-cleaner
+
+steps:
+  # =========================================================================
+  # Step 1: load_and_merge
+  # =========================================================================
+  - id: load_and_merge
+    depends_on: []
+    type: agent
+    description: |
+      Load all Phase 2 outputs and merge into a unified per-resource view.
+      Sorted by cost descending for prioritization.
+    prompt: |
+      Load and merge all Phase 2 outputs into a single unified view.
+
+      ## Inputs to read
+
+      1. **Deep scan profiles** - glob `{run_dir}/analysis/deep_scan_*.json`
+         Each file contains detailed technical profile for one candidate resource:
+         - resource_id, resource_type, entity_type, cloud_provider
+         - spec (CPU/memory/disk), actual_utilization
+         - running_processes, open_ports, installed_packages
+         - owner_detail, team_lead_id
+         - business_context (application, system, scheduled_tasks)
+         - cost (monthly, yearly - either from cloud billing or estimated)
+         - tags, environment
+
+      2. **Observation reports** - glob `{run_dir}/observe/observation_*.json`
+         Each file contains isolation observation results:
+         - resource_id
+         - isolation_method, isolation_start/end dates
+         - observation_result: passed / failed / uncertain
+         - alert_count, complaint_count
+         - anomaly_events (if any), rollback_triggered
+         - observation_period_days
+
+      3. **Observation batch summary** - `{run_dir}/observe/observation_batch_summary.json`
+         High-level summary of all observations (results histogram, rollback count).
+
+      ## Merge logic
+
+      For each unique resource_id found across deep scan files:
+        - If both deep_scan + observation exist: merge full profile
+        - If only deep_scan exists (observation not yet done): mark observation_result = "pending"
+        - If only observation exists (deep scan missing): include with available data, mark spec = "incomplete"
+
+      ## Recommendation logic
+
+      For each resource, generate an AI recommendation:
+        - **DELETE**: observation_result = "passed" (no alerts, no complaints, no rollback)
+        - **KEEP**: observation_result = "failed" OR resource has active business use
+        - **EXTEND_OBSERVATION**: observation_result = "uncertain" (some alerts but inconclusive)
+
+      This is a preliminary recommendation - the human makes the final call.
+
+      Sort resources by cost.monthly descending (most expensive first).
+
+      ## Self-validation
+
+      Before writing the output, verify:
+        - total_candidates matches resources array length
+        - All resources have required fields: resource_id, resource_type, cloud_provider, cost, observation, recommendation, recommendation_reason
+        - total_monthly_cost equals sum of all resources monthly cost
+        - observation_summary counts equal total_candidates
+        - Resources sorted by cost.monthly descending
+
+      If any validation fails, fix the issue and re-validate.
+
+    input:
+      - schema: schemas/deep-scan.schema.json
+        glob: true
+        file: analysis/deep_scan_{resource_id}.json
+        description: Deep scan profiles from Phase 2
+      - schema: schemas/observation-input.schema.json
+        file: observe/observation_{resource_id}.json
+        glob: true
+        description: Observation reports from Phase 2
+      - schema: schemas/observation-batch-summary-input.schema.json
+        file: observe/observation_batch_summary.json
+        description: Observation batch summary from Phase 2
+    output:
+      - schema: schemas/merged-view.schema.json
+        file: decision/merged_view.json
+
+  # =========================================================================
+  # Step 2: generate_decision_report
+  # =========================================================================
+  - id: generate_decision_report
+    depends_on: [load_and_merge]
+    type: agent
+    description: |
+      Present merged findings to the user and collect per-resource decisions.
+      Use the Write tool to produce a Markdown report in the chat.
+    prompt_file: prompts/generate-decision-report.agent.md
+    input:
+      - schema: schemas/merged-view.schema.json
+        from_step: load_and_merge
+        file: decision/merged_view.json
+    output:
+      - schema: schemas/user-decisions.schema.json
+        file: decision/user_decisions.json
+
+  # =========================================================================
+  # Step 3: write_phase5_decision
+  # =========================================================================
+  - id: write_phase5_decision
+    depends_on: [load_and_merge, generate_decision_report]
+    type: inline
+    description: |
+      Produce the handoff file that backup-creator and resource-cleaner
+      read as their primary input.
+    prompt: |
+      Read `{run_dir}/decision/merged_view.json` and
+      `{run_dir}/decision/user_decisions.json`.
+
+      Filter merged resources to only those with a user decision of "delete",
+      then write the handoff file that downstream agents consume.
+
+      decision_id format: `confirm-{YYYYMMDD}-{3-digit sequence}` (e.g. confirm-20260609-001).
+      Populate each resource entry from merged_view.json fields.
+      resource_metadata should include spec, actual_utilization, owner_detail,
+      business_context, and tags from the merged view.
+
+      Self-validate before writing:
+        - decision_id matches pattern confirm-YYYYMMDD-NNN
+        - total_resources equals resources array length
+        - All resources have required fields
+        - resource_metadata is present and non-empty for each resource
+
+    input:
+      - schema: schemas/merged-view.schema.json
+        from_step: load_and_merge
+        file: decision/merged_view.json
+      - schema: schemas/user-decisions.schema.json
+        from_step: generate_decision_report
+        file: decision/user_decisions.json
+    output:
+      - schema: schemas/phase5-decision.schema.json
+        file: confirm/phase5_decision.json
+
+  # =========================================================================
+  # Step 4: execute_decisions
+  # =========================================================================
+  - id: execute_decisions
+    depends_on: [generate_decision_report, write_phase5_decision]
+    type: agent
+    description: |
+      Execute the user's decisions: dispatch backup+delete for confirmed
+      resources, tag exempt resources, and notify for extended observation.
+    prompt_file: prompts/execute-decisions.agent.md
+    input:
+      - schema: schemas/user-decisions.schema.json
+        from_step: generate_decision_report
+        file: decision/user_decisions.json
+      - schema: schemas/phase5-decision.schema.json
+        from_step: write_phase5_decision
+        file: confirm/phase5_decision.json
+    output:
+      - schema: schemas/execution-results.schema.json
+        file: decision/execution_results.json
+
+  # =========================================================================
+  # Step 5: deliver_final_report
+  # =========================================================================
+  - id: deliver_final_report
+    depends_on: [load_and_merge, generate_decision_report, execute_decisions]
+    type: agent
+    description: |
+      Generate and deliver the final cost optimization report as Markdown
+      using the Write tool. Also write a machine-readable summary.
+    prompt_file: prompts/deliver-final-report.agent.md
+    input:
+      - schema: schemas/merged-view.schema.json
+        from_step: load_and_merge
+        file: decision/merged_view.json
+      - schema: schemas/user-decisions.schema.json
+        from_step: generate_decision_report
+        file: decision/user_decisions.json
+      - schema: schemas/execution-results.schema.json
+        from_step: execute_decisions
+        file: decision/execution_results.json
+    output:
+      - schema: schemas/final-summary.schema.json
+        file: decision/final_summary.json

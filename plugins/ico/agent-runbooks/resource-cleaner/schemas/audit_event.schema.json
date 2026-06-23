@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Audit Event",
+  "description": "Audit event record",
+  "type": "object",
+  "required": ["timestamp", "event", "actor"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event timestamp"
+    },
+    "event": {
+      "type": "string",
+      "enum": [
+        "pre_flight_started",
+        "pre_flight_passed",
+        "pre_flight_blocked",
+        "backup_started",
+        "backup_completed",
+        "backup_verified",
+        "backup_failed",
+        "deletion_started",
+        "deletion_step_completed",
+        "deletion_completed",
+        "deletion_failed",
+        "verification_started",
+        "verification_completed",
+        "metadata_updated",
+        "cost_calculated"
+      ],
+      "description": "Event type"
+    },
+    "actor": {
+      "type": "string",
+      "description": "Actor (zombie-resource-cleaner agent)"
+    },
+    "details": {
+      "type": "object",
+      "description": "Event details"
+    },
+    "result": {
+      "type": "string",
+      "enum": ["success", "warning", "failure"],
+      "description": "Event result"
+    }
+  }
+}

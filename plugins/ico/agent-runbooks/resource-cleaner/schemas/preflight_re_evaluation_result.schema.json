@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pre-Flight Re-Evaluation Result",
+  "description": "Pre-deletion re-evaluation result",
+  "type": "object",
+  "required": ["pre_flight_result", "timestamp"],
+  "properties": {
+    "pre_flight_result": {
+      "type": "string",
+      "enum": ["passed", "warning", "blocked"],
+      "description": "Re-evaluation result"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checks": {
+      "type": "object",
+      "description": "Results of each check item",
+      "properties": {
+        "cooling_period_expired": {
+          "type": "boolean"
+        },
+        "decision_not_revoked": {
+          "type": "boolean"
+        },
+        "decision_not_expired": {
+          "type": "boolean"
+        },
+        "resource_exists": {
+          "type": "boolean"
+        },
+        "isolation_valid": {
+          "type": "boolean"
+        },
+        "no_new_traffic": {
+          "type": "boolean"
+        },
+        "no_new_dependencies": {
+          "type": "boolean"
+        },
+        "owner_unchanged": {
+          "type": "boolean"
+        },
+        "no_new_complaints": {
+          "type": "boolean"
+        }
+      }
+    },
+    "blocked_reason": {
+      "type": "string",
+      "description": "Reason if blocked"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Warning message list"
+    }
+  }
+}

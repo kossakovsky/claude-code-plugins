@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Dependency Graph",
+  "description": "Resource dependency graph (for batch ordering)",
+  "type": "object",
+  "required": ["edges"],
+  "properties": {
+    "edges": {
+      "type": "array",
+      "description": "Dependency edge list",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Dependent resource ID (depends on, should be deleted later)"
+          },
+          "to": {
+            "type": "string",
+            "description": "Dependency resource ID (depended on, should be deleted first)"
+          }
+        }
+      }
+    }
+  }
+}

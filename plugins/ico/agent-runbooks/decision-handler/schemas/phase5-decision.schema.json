@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Phase 5 Decision",
+  "description": "Handoff file for downstream backup-creator and resource-cleaner agents. Contains only resources with user decision of 'delete'.",
+  "type": "object",
+  "required": ["decision_id", "decision_timestamp", "total_resources", "resources"],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "pattern": "^confirm-\\d{8}-\\d{3}$",
+      "description": "Unique decision identifier, format: confirm-YYYYMMDD-NNN (e.g., confirm-20260609-001)"
+    },
+    "decision_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when this decision file was generated"
+    },
+    "total_resources": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of resources confirmed for deletion"
+    },
+    "resources": {
+      "type": "array",
+      "description": "Resources confirmed for deletion with full metadata from merged view",
+      "items": {
+        "type": "object",
+        "required": ["resource_id", "resource_type", "entity_type", "environment", "cloud_provider", "observation_result", "estimated_monthly_cost"],
+        "properties": {
+          "resource_id": { "type": "string", "description": "Unique resource identifier" },
+          "resource_type": { "type": "string", "description": "Resource type (e.g., CloudVM, RDS)" },
+          "entity_type": { "type": "string", "description": "Cloud provider entity type (e.g. VM instance)" },
+          "environment": {
+            "type": "string",
+            "enum": ["dev", "staging", "production"],
+            "description": "Environment tier"
+          },
+          "cloud_provider": {
+            "type": "string",
+            "enum": ["aws", "aliyun", "k8s", "unknown"],
+            "description": "Cloud provider"
+          },
+          "observation_result": {
+            "type": "string",
+            "enum": ["passed", "uncertain"],
+            "description": "Observation result for this resource"
+          },
+          "estimated_monthly_cost": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Estimated monthly cost savings"
+          },
+          "resource_metadata": {
+            "type": "object",
+            "description": "Full resource metadata from merged view (spec, actual_utilization, owner_detail, business_context, tags)"
+          }
+        }
+      }
+    }
+  }
+}

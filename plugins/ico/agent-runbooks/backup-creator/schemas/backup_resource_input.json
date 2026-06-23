@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Resource Input Schema",
+  "description": "Single resource to be backed up in Phase 6",
+  "properties": {
+    "resource_id": {
+      "type": "string",
+      "description": "Unique resource identifier (e.g., i-0123456789abcdef0, db-prod-001, deployment-name)"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": [
+        "compute",
+        "database",
+        "cache",
+        "storage",
+        "network",
+        "k8s_workload",
+        "k8s_orphan",
+        "k8s_service"
+      ],
+      "description": "Resource category for operational grouping"
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "CloudVM",
+        "CloudDisk",
+        "CloudRDS",
+        "CloudCache",
+        "LoadBalancer",
+        "StorageBucket",
+        "Domain",
+        "K8sWorkload",
+        "K8sService",
+        "K8sOrphan"
+      ],
+      "description": "Resource entity type from Phase 1 discovery (consistent across pipeline)"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "staging",
+        "dev"
+      ],
+      "description": "Environment determines retention period (prod:30d, staging:14d, dev:7d)"
+    },
+    "cloud_provider": {
+      "type": "string",
+      "enum": [
+        "aws",
+        "aliyun",
+        "k8s"
+      ],
+      "description": "Cloud platform provider"
+    },
+    "region": {
+      "type": "string",
+      "description": "Cloud region (e.g., us-east-1, cn-beijing, not applicable for K8s)"
+    },
+    "k8s_context": {
+      "type": "string",
+      "description": "K8s cluster context name (only for K8s resources)"
+    },
+    "k8s_namespace": {
+      "type": "string",
+      "description": "K8s namespace (only for K8s resources)"
+    },
+    "k8s_name": {
+      "type": "string",
+      "description": "K8s resource name (only for K8s resources)"
+    },
+    "resource_metadata": {
+      "type": "object",
+      "description": "Provider-specific metadata for backup operations",
+      "properties": {
+        "instance_type": {
+          "type": "string",
+          "description": "Instance type (for CloudVM)"
+        },
+        "volume_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Data volume IDs (for CloudVM)"
+        },
+        "security_groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Security group IDs"
+        },
+        "vpc_id": {
+          "type": "string",
+          "description": "VPC identifier"
+        },
+        "subnet_id": {
+          "type": "string",
+          "description": "Subnet identifier"
+        },
+        "db_engine": {
+          "type": "string",
+          "description": "Database engine type (mysql, postgresql, aurora, etc.)"
+        },
+        "db_size_gb": {
+          "type": "number",
+          "description": "Estimated database size in GB"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "Service endpoint (for Redis, Memcache)"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Service port"
+        },
+        "kind": {
+          "type": "string",
+          "description": "K8s resource kind (Deployment, StatefulSet, ConfigMap, etc.)"
+        },
+        "replicas": {
+          "type": "integer",
+          "description": "K8s replica count (should be 0 after Phase 3 isolation)"
+        },
+        "image": {
+          "type": "string",
+          "description": "Container image (for K8s)"
+        },
+        "tags": {
+          "type": "object",
+          "description": "Resource tags as key-value pairs"
+        }
+      },
+      "additionalProperties": true
+    },
+    "decision_id": {
+      "type": "string",
+      "description": "Phase 5 confirmation decision ID (e.g., confirm-20260605-001)"
+    },
+    "backup_retention_days": {
+      "type": "integer",
+      "description": "Override default retention days (if not specified, use environment default)",
+      "minimum": 1,
+      "maximum": 90
+    },
+    "estimated_monthly_cost": {
+      "type": "number",
+      "description": "Estimated monthly cost before deletion (in dollars or local currency)"
+    }
+  },
+  "required": [
+    "resource_id",
+    "resource_type",
+    "entity_type",
+    "environment",
+    "cloud_provider",
+    "resource_metadata",
+    "decision_id"
+  ]
+}

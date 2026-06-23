@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Quality Report",
+  "type": "object",
+  "properties": {
+    "phase": {
+      "type": "string",
+      "description": "Phase name"
+    },
+    "result": {
+      "type": "string",
+      "enum": ["passed", "warning", "issues", "failed"],
+      "description": "Overall quality check result"
+    },
+    "checks": {
+      "type": "array",
+      "description": "Individual quality check results",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Check name"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pass", "warn", "fail"],
+            "description": "Check status"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Check detail message"
+          }
+        },
+        "required": ["name", "status"]
+      }
+    },
+    "checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the quality check was performed"
+    }
+  },
+  "required": ["result", "checked_at"]
+}

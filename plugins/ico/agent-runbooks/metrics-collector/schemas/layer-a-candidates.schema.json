@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Layer A Candidates Schema",
+  "description": "Resources after Layer A coarse exclusion (new resources, terminated status, DR/backup tags)",
+  "properties": {
+    "total_in_scope": {
+      "type": "integer",
+      "description": "Total number of resources discovered in Layer A.1"
+    },
+    "candidates_count": {
+      "type": "integer",
+      "description": "Number of resources passing Layer A.2 coarse exclusion"
+    },
+    "excluded_count": {
+      "type": "integer",
+      "description": "Number of resources excluded by Layer A.2 rules"
+    },
+    "filter_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Exclusion rate: excluded_count / total_in_scope"
+    },
+    "candidates": {
+      "type": "array",
+      "description": "Resources passing Layer A coarse exclusion",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "description": "Unique resource identifier"
+          },
+          "resource_type": {
+            "type": "string",
+            "enum": ["compute", "storage", "network", "database", "cache", "k8s_workload", "k8s_service", "k8s_orphan", "domain"],
+            "description": "Resource category"
+          },
+          "entity_type": {
+            "type": "string",
+            "enum": ["CloudVM", "CloudDisk", "CloudRDS", "CloudCache", "LoadBalancer", "StorageBucket", "Domain", "K8sWorkload", "K8sService", "K8sOrphan"],
+            "description": "Semantic network entity type"
+          },
+          "environment": {
+            "type": "string",
+            "enum": ["production", "staging", "dev", "unknown"],
+            "description": "Environment classification from tags"
+          },
+          "tags": {
+            "type": "string",
+            "description": "JSON string of resource tags"
+          },
+          "provisioned_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Resource creation time (ISO 8601)"
+          },
+          "estimated_monthly_cost": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Estimated monthly cost in USD"
+          },
+          "private_ip": {
+            "type": ["string", "null"],
+            "description": "Private IP address if applicable"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current resource status"
+          }
+        },
+        "required": ["resource_id", "resource_type", "entity_type", "provisioned_at"]
+      }
+    }
+  },
+  "required": ["total_in_scope", "candidates_count", "excluded_count", "filter_rate", "candidates"]
+}

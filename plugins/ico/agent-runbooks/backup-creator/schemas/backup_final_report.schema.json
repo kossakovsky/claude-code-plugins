@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Final Report Schema",
+  "description": "Final phase completion report: overall status, per-phase results summary, output file manifest, and next phase handoff",
+  "properties": {
+    "phase_6_backup_result": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["success", "partial_success", "failed"],
+          "description": "Overall phase result"
+        },
+        "total_resources": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "successful_backups": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "escalations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output_files": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of output file names generated"
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Subdirectory under run_dir containing all backup artifacts"
+        },
+        "next_phase": {
+          "type": "string",
+          "enum": ["phase_6_delete_execution", "phase_6_manual_review"]
+        },
+        "proceed_with_deletion": {
+          "type": "boolean",
+          "description": "True if no escalations block deletion"
+        },
+        "manual_review_required": {
+          "type": "boolean",
+          "description": "True if any resources require manual backup or review"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "artifacts": {
+          "type": "object",
+          "description": "Map of artifact type to list of file names",
+          "additionalProperties": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      },
+      "required": ["status", "total_resources", "successful_backups", "escalations", "output_files", "proceed_with_deletion"]
+    }
+  },
+  "required": ["phase_6_backup_result"]
+}

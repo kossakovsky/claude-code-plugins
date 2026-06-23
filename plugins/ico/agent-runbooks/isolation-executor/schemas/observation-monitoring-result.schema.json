@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Observation Monitoring Result",
+  "description": "Signals collected during observation period (Phase B)",
+  "type": "object",
+  "properties": {
+    "resource_id": { "type": "string" },
+    "observation_id": { "type": "string" },
+    "observation_start": { "type": "string", "format": "date-time" },
+    "observation_end": { "type": "string", "format": "date-time" },
+    "observation_period_days": { "type": "integer" },
+    "signals": {
+      "type": "array",
+      "description": "All collected signals during observation period",
+      "items": {
+        "type": "object",
+        "properties": {
+          "signal_type": {
+            "type": "string",
+            "enum": ["metric", "alert", "complaint"]
+          },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "metric_name": { "type": "string" },
+          "metric_value": { "type": "number" },
+          "alert_name": { "type": "string" },
+          "alert_severity": { "type": "string" },
+          "alert_resource": { "type": "string" },
+          "complaint_channel": { "type": "string" },
+          "complaint_user": { "type": "string" },
+          "complaint_message": { "type": "string" }
+        },
+        "required": ["signal_type", "timestamp"]
+      }
+    },
+    "rollback_triggered": {
+      "type": "boolean",
+      "description": "Whether rollback was triggered during observation"
+    },
+    "rollback_trigger_level": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "none"],
+      "description": "Severity level that triggered rollback"
+    },
+    "rollback_executed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when rollback was executed (null if not triggered)"
+    },
+    "rollback_steps_executed": {
+      "type": "integer"
+    },
+    "rollback_steps_failed": {
+      "type": "integer"
+    },
+    "rollback_status": {
+      "type": "string",
+      "enum": ["not_needed", "triggered", "completed", "failed"]
+    },
+    "metrics_summary": {
+      "type": "object",
+      "properties": {
+        "alert_count": { "type": "integer" },
+        "complaint_count": { "type": "integer" },
+        "anomaly_dates": {
+          "type": "array",
+          "items": { "type": "string", "format": "date" }
+        },
+        "max_error_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "max_latency_ms": { "type": "number" },
+        "max_cpu_percent": { "type": "number" }
+      }
+    }
+  },
+  "required": [
+    "resource_id", "observation_id", "observation_start", "observation_end",
+    "observation_period_days", "signals", "rollback_triggered", "rollback_status",
+    "metrics_summary"
+  ]
+}

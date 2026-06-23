@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Episodes Schema",
+  "description": "Task-level progress tracking for the backup phase: status, statistics, result summary, and completion metadata",
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Task ID for progress tracking"
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["phase_6_backup"],
+      "description": "Current workflow phase"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["in_progress", "completed", "failed"],
+      "description": "Overall phase status"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when backup phase started"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when backup phase completed"
+    },
+    "escalation_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {"type": "string"},
+          "escalation_id": {"type": "string"},
+          "escalation_status": {"type": "string"},
+          "notification_sent_at": {"type": "string", "format": "date-time"},
+          "resolved": {"type": "boolean"}
+        }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "properties": {
+        "total_resources": {"type": "integer", "minimum": 0},
+        "successful_backups": {"type": "integer", "minimum": 0},
+        "failed_backups": {"type": "integer", "minimum": 0},
+        "escalations": {"type": "integer", "minimum": 0}
+      },
+      "required": ["total_resources", "successful_backups", "failed_backups", "escalations"]
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "backup_ready": {"type": "boolean"},
+        "ready_for_deletion": {"type": "boolean"},
+        "manual_review_required": {"type": "boolean"},
+        "summary_file": {"type": "string"},
+        "final_report_file": {"type": "string"}
+      },
+      "required": ["backup_ready", "ready_for_deletion", "manual_review_required"]
+    }
+  },
+  "required": ["task_id", "phase", "status", "statistics", "result"]
+}

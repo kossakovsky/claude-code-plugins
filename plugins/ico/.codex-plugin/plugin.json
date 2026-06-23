@@ -1,0 +1,31 @@
+{
+  "name": "ico",
+  "version": "2.0.0",
+  "description": "Infra Cost Optimizer — identify idle and underutilized cloud resources, orchestrate safe isolation and observation, and manage the approve-decommission workflow to reduce cloud spend.",
+  "author": {
+    "name": "KnoxOps",
+    "url": "https://github.com/KnoxOps"
+  },
+  "homepage": "https://github.com/KnoxOps/open-devops-skills",
+  "repository": "https://github.com/KnoxOps/open-devops-skills.git",
+  "license": "MIT",
+  "keywords": ["devops", "sre", "cloud", "cost-optimization", "zombie-resources", "kubernetes", "skills", "codex"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ICO — Infra Cost Optimizer",
+    "shortDescription": "Identify idle cloud resources, orchestrate safe isolation, and reduce cloud spend.",
+    "longDescription": "Production-ready DevOps skill pack for SRE and platform engineering teams. Covers zombie/idle resource detection across 8 resource types (compute, database, cache, storage, network, K8s workload, K8s service, object storage), multi-dimensional scoring, deep technical scanning, isolation planning and execution, and safe decommission with audit trail.",
+    "developerName": "KnoxOps",
+    "category": "DevOps",
+    "capabilities": ["Interactive", "Write"],
+    "websiteURL": "https://github.com/KnoxOps/open-devops-skills",
+    "privacyPolicyURL": "https://github.com/KnoxOps/open-devops-skills",
+    "termsOfServiceURL": "https://github.com/KnoxOps/open-devops-skills",
+    "defaultPrompt": [
+      "Scan my cloud account for zombie resources",
+      "Find idle cloud resources wasting money",
+      "Which resources can I safely downsize?"
+    ],
+    "brandColor": "#00c2e0"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Isolation Execution Result",
+  "description": "Result of isolation execution for a single resource (Phase A)",
+  "type": "object",
+  "properties": {
+    "resource_id": { "type": "string" },
+    "resource_type": { "type": "string" },
+    "isolation_method": { "type": "string" },
+    "isolation_executed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "isolation_steps_executed": {
+      "type": "integer",
+      "description": "Number of isolation steps successfully executed"
+    },
+    "isolation_steps_failed": {
+      "type": "integer",
+      "description": "Number of isolation steps that failed"
+    },
+    "verification_passed": {
+      "type": "boolean",
+      "description": "Whether post-isolation verification succeeded"
+    },
+    "snapshot_path": {
+      "type": "string",
+      "description": "Path to pre-isolation state snapshot"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["isolated", "isolation_failed", "verification_failed", "rollback_failed"],
+      "description": "Final status of isolation execution"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if status is not isolated"
+    },
+    "logs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "step_id": { "type": "integer" },
+          "command": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "stdout": { "type": "string" },
+          "stderr": { "type": "string" }
+        }
+      }
+    }
+  },
+  "required": [
+    "resource_id", "resource_type", "isolation_method", "isolation_executed_at",
+    "isolation_steps_executed", "isolation_steps_failed", "verification_passed",
+    "snapshot_path", "status"
+  ]
+}

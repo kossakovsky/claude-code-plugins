@@ -1,0 +1,24 @@
+{
+  "name": "ico",
+  "version": "2.0.0",
+  "description": "Infra Cost Optimizer — identify idle and underutilized cloud resources, orchestrate safe isolation and observation, and manage the approve-decommission workflow to reduce cloud spend.",
+  "author": {
+    "name": "KnoxOps",
+    "url": "https://github.com/KnoxOps"
+  },
+  "homepage": "https://github.com/KnoxOps/open-devops-skills",
+  "repository": "https://github.com/KnoxOps/open-devops-skills.git",
+  "license": "MIT",
+  "keywords": ["devops", "sre", "cloud", "cost-optimization", "zombie-resources", "finops", "aws"],
+  "skills": [
+    "skills/orchestrator/SKILL.md",
+    "skills/metrics-collector/SKILL.md",
+    "skills/resource-screener/SKILL.md",
+    "skills/deep-scanner/SKILL.md",
+    "skills/isolation-planner/SKILL.md",
+    "skills/isolation-executor/SKILL.md",
+    "skills/decision-handler/SKILL.md",
+    "skills/backup-creator/SKILL.md",
+    "skills/resource-cleaner/SKILL.md"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Notifications",
+  "description": "Post-deletion notification content",
+  "type": "object",
+  "required": ["notifications"],
+  "properties": {
+    "notifications": {
+      "type": "array",
+      "description": "Notification list",
+      "items": {
+        "type": "object",
+        "required": ["type", "message"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["summary", "backup_retention", "recovery_window", "failure_alert"],
+            "description": "Notification type"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["info", "warning", "critical"],
+            "description": "Notification priority"
+          },
+          "message": {
+            "type": "string",
+            "description": "Notification message content"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Notification recipients / teams"
+          },
+          "action_required": {
+            "type": "boolean",
+            "description": "Whether action is required"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Action deadline"
+          }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Notification generation timestamp"
+    }
+  }
+}

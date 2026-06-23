@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Batch Deletion Plan",
+  "description": "Batch deletion execution plan (grouped by dependencies)",
+  "type": "object",
+  "required": ["batch_id", "total_resources", "num_batches", "batches"],
+  "properties": {
+    "batch_id": {
+      "type": "string",
+      "description": "Unique batch identifier"
+    },
+    "total_resources": {
+      "type": "integer",
+      "description": "Total number of resources to delete"
+    },
+    "num_batches": {
+      "type": "integer",
+      "description": "Total number of batches"
+    },
+    "batches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "batch_seq": {
+            "type": "integer",
+            "description": "Batch sequence number"
+          },
+          "resource_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Resource IDs in this batch"
+          },
+          "dependency_order": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "resource_id": {
+                  "type": "string"
+                },
+                "deletion_seq": {
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "Deletion order sequence"
+          },
+          "max_concurrent": {
+            "type": "integer",
+            "description": "Maximum concurrent deletions"
+          },
+          "inter_batch_interval_sec": {
+            "type": "integer",
+            "description": "Batch interval (seconds)"
+          }
+        }
+      }
+    }
+  }
+}

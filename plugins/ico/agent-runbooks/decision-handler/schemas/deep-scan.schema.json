@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Deep Scan Profile",
+  "description": "Deep scan technical profile for a single zombie resource candidate",
+  "type": "object",
+  "required": ["resource_id", "resource_type", "cloud_provider"],
+  "properties": {
+    "resource_id": { "type": "string", "description": "Unique resource identifier" },
+    "resource_name": { "type": "string", "description": "Human-readable resource name" },
+    "resource_type": { "type": "string", "description": "Resource type (e.g., CloudVM, RDS)" },
+    "entity_type": { "type": "string", "description": "Cloud provider entity type (e.g. VM instance)" },
+    "cloud_provider": {
+      "type": "string",
+      "enum": ["aws", "aliyun", "k8s", "unknown"],
+      "description": "Cloud provider"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["dev", "staging", "production"],
+      "description": "Environment tier"
+    },
+    "spec": {
+      "type": "object",
+      "description": "Resource specifications",
+      "properties": {
+        "cpu": { "type": "number" },
+        "memory_gb": { "type": "number" },
+        "disk_gb": { "type": "number" }
+      }
+    },
+    "actual_utilization": {
+      "type": "object",
+      "description": "Actual resource utilization metrics",
+      "properties": {
+        "cpu_pct": { "type": "number" },
+        "memory_pct": { "type": "number" }
+      }
+    },
+    "owner_detail": {
+      "type": "object",
+      "description": "Resource owner information",
+      "properties": {
+        "user_id": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    },
+    "business_context": {
+      "type": "object",
+      "description": "Business context from deep scan",
+      "properties": {
+        "application": { "type": "string" },
+        "system": { "type": "string" },
+        "scheduled_tasks": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "properties": {
+        "monthly": { "type": "number" },
+        "yearly": { "type": "number" },
+        "currency": { "type": "string" }
+      }
+    },
+    "tags": { "type": "object" }
+  }
+}

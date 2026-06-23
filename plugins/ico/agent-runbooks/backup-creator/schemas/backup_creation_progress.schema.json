@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Backup Creation Progress Schema",
+  "description": "Progress tracking for backup creation with retry logic, recording per-resource backup status, attempt counts, and audit events",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when progress was last updated"
+    },
+    "total_backups": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "completed_successful": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "completed_failed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "in_progress": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource_id": {"type": "string"},
+          "backup_creation": {
+            "type": "object",
+            "properties": {
+              "attempt": {"type": "integer", "minimum": 1, "maximum": 3},
+              "status": {
+                "type": "string",
+                "enum": ["success", "failed", "in_progress", "escalation_required"]
+              },
+              "backup_id": {"type": ["string", "null"]},
+              "backup_type": {"type": "string"},
+              "backup_size_bytes": {"type": ["integer", "null"], "minimum": 0},
+              "created_at": {"type": "string", "format": "date-time"},
+              "duration_seconds": {"type": "integer", "minimum": 0},
+              "error": {"type": ["string", "null"]},
+              "retry_delay_seconds": {"type": ["integer", "null"], "minimum": 0},
+              "audit_events": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": {"type": "string", "format": "date-time"},
+                    "event": {"type": "string"},
+                    "status": {"type": "string"},
+                    "details": {"type": "object", "additionalProperties": true}
+                  },
+                  "required": ["timestamp", "event"]
+                }
+              }
+            },
+            "required": ["attempt", "status"]
+          }
+        },
+        "required": ["resource_id", "backup_creation"]
+      }
+    }
+  },
+  "required": ["timestamp", "total_backups", "completed_successful", "completed_failed", "in_progress", "resources"]
+}

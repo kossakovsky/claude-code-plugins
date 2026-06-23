@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Backup Strategy",
+  "description": "Backup strategy determined by resource type",
+  "type": "object",
+  "required": ["backup_type", "retention_days"],
+  "properties": {
+    "backup_type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "snapshot",
+        "final_snapshot",
+        "rdb_export",
+        "yaml_export",
+        "config_snapshot"
+      ],
+      "description": "Backup type"
+    },
+    "retention_days": {
+      "type": "integer",
+      "description": "Backup retention days (based on environment)"
+    },
+    "recovery_sla_hours": {
+      "type": "integer",
+      "description": "Recovery SLA (hours)"
+    },
+    "special_instructions": {
+      "type": "string",
+      "description": "Special handling instructions"
+    }
+  }
+}

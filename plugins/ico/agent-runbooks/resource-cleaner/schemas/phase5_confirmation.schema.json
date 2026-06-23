@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Phase 5 Confirmation Decision",
+  "description": "Phase 5 confirmation decision input",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "resource_id",
+    "resource_type",
+    "entity_type",
+    "environment",
+    "approval_tier",
+    "decided_by",
+    "decided_at",
+    "cooling_period_ends_at",
+    "decision_status"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "description": "Phase 5 decision unique identifier"
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "Resource ID to delete"
+    },
+    "resource_type": {
+      "type": "string",
+      "enum": ["compute", "database", "cache", "storage", "network", "k8s_workload", "k8s_service", "domain"],
+      "description": "Resource type category"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Entity type (CloudVM, RDS, Redis, LoadBalancer, ElasticIP, etc.)"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["production", "staging", "dev"],
+      "description": "Environment identifier"
+    },
+    "approval_tier": {
+      "type": "string",
+      "enum": ["standard", "enhanced", "critical"],
+      "description": "Approval tier"
+    },
+    "decided_by": {
+      "type": "string",
+      "description": "Decision maker ID"
+    },
+    "decided_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Decision timestamp"
+    },
+    "cooling_period_ends_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Cooling period end time"
+    },
+    "decision_status": {
+      "type": "string",
+      "enum": ["CONFIRMED", "REVOKED", "EXPIRED"],
+      "description": "Decision status"
+    },
+    "zombie_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Zombie score (from Phase 1)"
+    },
+    "suspect_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "Suspect level"
+    },
+    "estimated_monthly_cost": {
+      "type": "number",
+      "description": "Estimated monthly cost"
+    },
+    "data_sensitivity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "Data sensitivity level"
+    },
+    "owner_status": {
+      "type": "object",
+      "description": "Owner status information",
+      "properties": {
+        "owner_id": {
+          "type": "string"
+        },
+        "owner_name": {
+          "type": "string"
+        },
+        "team_id": {
+          "type": "string"
+        }
+      }
+    },
+    "blast_radius": {
+      "type": "object",
+      "description": "Blast radius analysis"
+    },
+    "investigation_brief": {
+      "type": "string",
+      "description": "Investigation summary"
+    },
+    "isolation_record": {
+      "type": "object",
+      "description": "Isolation execution record"
+    },
+    "observation_record": {
+      "type": "object",
+      "description": "Observation period record",
+      "properties": {
+        "complaints_count": {
+          "type": "integer",
+          "default": 0
+        }
+      }
+    },
+    "resource_properties": {
+      "type": "object",
+      "description": "Resource property snapshot",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "public_ip": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
