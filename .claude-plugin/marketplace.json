@@ -9,6 +9,18 @@
   },
   "plugins": [
     {
+      "name": "codebase-wiki",
+      "description": "Codebase knowledge accumulation system — analyze repos, build a structured wiki, compare architectures, and query design decisions. Built on the LLM Wiki pattern.",
+      "version": "0.2.0",
+      "author": {
+        "name": "myl17"
+      },
+      "source": "./plugins/codebase-wiki",
+      "category": "developer-tools",
+      "tags": ["codebase", "wiki", "knowledge-management", "code-analysis"],
+      "keywords": ["codebase", "wiki", "knowledge", "ingest", "architecture", "comparison", "lint"]
+    },
+    {
       "name": "switch-provider",
       "description": "Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command",
       "version": "1.0.0",

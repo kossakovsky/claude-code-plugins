@@ -1,0 +1,9 @@
+{
+  "userIgnoreFilters": [
+    "hot.md",
+    "log.md",
+    "index.md",
+    ".hashes.json",
+    "graph.json"
+  ]
+}
