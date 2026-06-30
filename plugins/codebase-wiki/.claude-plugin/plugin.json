@@ -1,7 +1,7 @@
 {
   "name": "codebase-wiki",
   "description": "Codebase knowledge management plugin — analyze repos, build a structured wiki, compare architectures, query design decisions, and track staleness across your organization's repositories",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "myl17"
   },
