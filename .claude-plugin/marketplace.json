@@ -1,21 +1,72 @@
 {
-  "name": "codebase-wiki",
-  "description": "Codebase knowledge accumulation system — analyze repos, build a structured wiki, compare architectures, and query design decisions",
+  "name": "cc-plugins",
   "owner": {
-    "name": "myl17"
+    "name": "kossakovsky"
+  },
+  "metadata": {
+    "description": "Community marketplace of plugins for Claude Code",
+    "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "codebase-wiki",
-      "description": "Codebase knowledge management plugin — analyze repos, build a structured wiki, compare architectures, query design decisions, and track staleness across your organization's repositories",
+      "description": "Codebase knowledge accumulation system — analyze repos, build a structured wiki, compare architectures, and query design decisions. Built on the LLM Wiki pattern.",
       "version": "0.2.0",
-      "source": "./",
       "author": {
         "name": "myl17"
       },
+      "source": "./plugins/codebase-wiki",
       "category": "developer-tools",
       "tags": ["codebase", "wiki", "knowledge-management", "code-analysis"],
-      "keywords": ["codebase", "wiki", "knowledge-management", "code-analysis", "architecture", "comparison", "lint"]
+      "keywords": ["codebase", "wiki", "knowledge", "ingest", "architecture", "comparison", "lint"]
+    },
+    {
+      "name": "switch-provider",
+      "description": "Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command",
+      "version": "1.0.0",
+      "author": {
+        "name": "kossakovsky"
+      },
+      "source": "./plugins/switch-provider",
+      "category": "ai-tools",
+      "tags": ["provider", "api", "configuration"],
+      "keywords": ["provider", "switch", "api", "zai", "kimi", "minimax"]
+    },
+    {
+      "name": "plugin-development",
+      "description": "A comprehensive toolkit for creating, validating, and distributing Claude Code plugins",
+      "version": "1.3.0",
+      "author": {
+        "name": "kossakovsky"
+      },
+      "source": "./plugins/plugin-development",
+      "category": "developer-tools",
+      "tags": ["development", "plugins", "scaffold", "validation", "tools"],
+      "keywords": ["claude-code", "plugins", "developer-tools", "plugin-development", "plugin-authoring", "scaffold", "scaffolding", "validation"]
+    },
+    {
+      "name": "commit",
+      "description": "Smart git commits with conventional commit message generation",
+      "version": "1.0.0",
+      "author": {
+        "name": "kossakovsky"
+      },
+      "source": "./plugins/commit",
+      "category": "developer-tools",
+      "tags": ["git", "commits", "conventional-commits"],
+      "keywords": ["git", "commit", "conventional-commits", "changelog"]
+    },
+    {
+      "name": "writing-skills",
+      "description": "Create, test, and bulletproof Claude Code skills using TDD methodology. Based on obra/superpowers writing-skills",
+      "version": "1.0.0",
+      "author": {
+        "name": "obra"
+      },
+      "source": "./plugins/writing-skills",
+      "category": "developer-tools",
+      "tags": ["skills", "tdd", "testing", "development"],
+      "keywords": ["skills", "tdd", "testing", "development"]
     }
   ]
 }
