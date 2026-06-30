@@ -1,2 +1,1 @@
-# No external Python dependencies required.
-# lint.py uses only stdlib modules.
+pytest>=8.0
