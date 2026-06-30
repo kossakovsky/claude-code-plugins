@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "codebase-wiki",
-      "description": "Codebase knowledge accumulation system — analyze repos, build a structured wiki, compare architectures, and query design decisions. Built on the LLM Wiki pattern.",
+      "description": "Codebase knowledge management plugin — analyze repos, build a structured wiki, compare architectures, query design decisions, and track staleness across your organization's repositories",
       "version": "0.2.0",
       "author": {
         "name": "myl17"
@@ -18,7 +18,7 @@
       "source": "./plugins/codebase-wiki",
       "category": "developer-tools",
       "tags": ["codebase", "wiki", "knowledge-management", "code-analysis"],
-      "keywords": ["codebase", "wiki", "knowledge", "ingest", "architecture", "comparison", "lint"]
+      "keywords": ["codebase", "wiki", "knowledge-management", "code-analysis", "architecture", "comparison", "lint"]
     },
     {
       "name": "switch-provider",
