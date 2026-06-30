@@ -1,0 +1,11 @@
+.manifest.json
+wiki/eval-history.jsonl
+raw/
+__pycache__/
+*.pyc
+.pytest_cache/
+wiki/repos/*/.hashes.json
+wiki/.obsidian/graph.json
+experiments/
+.claude/
+skills/

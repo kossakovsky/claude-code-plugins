@@ -1,0 +1,42 @@
+{
+  "name": "codebase-wiki",
+  "description": "Codebase knowledge management plugin — analyze repos, build a structured wiki, compare architectures, query design decisions, and track staleness across your organization's repositories",
+  "version": "0.2.0",
+  "author": {
+    "name": "myl17"
+  },
+  "homepage": "https://github.com/myl17/codebase-wiki",
+  "repository": "https://github.com/myl17/codebase-wiki",
+  "license": "MIT",
+  "keywords": [
+    "codebase",
+    "wiki",
+    "knowledge-management",
+    "code-analysis",
+    "architecture",
+    "comparison",
+    "lint"
+  ],
+  "commands": {
+    "ingest": {
+      "description": "Extract structural entities from a code repository, map to problem spaces, and evolve concept pages",
+      "file": "commands/ingest.md"
+    },
+    "query": {
+      "description": "Answer questions using the wiki knowledge base",
+      "file": "commands/query.md"
+    },
+    "compare": {
+      "description": "Generate a comparison matrix across repos in a category",
+      "file": "commands/compare.md"
+    },
+    "lint": {
+      "description": "Run programmatic health checks on the wiki",
+      "file": "commands/lint.md"
+    },
+    "evolve-apply": {
+      "description": "Wikipedia-style concept page evolution: merge, split, redirect",
+      "file": "commands/evolve-apply.md"
+    }
+  }
+}
