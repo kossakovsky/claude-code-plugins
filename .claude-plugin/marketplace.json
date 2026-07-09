@@ -9,6 +9,18 @@
   },
   "plugins": [
     {
+      "name": "auto-research",
+      "description": "Auto-research skill: trigger ? to ask ChatGPT via Playwright browser, ?? to search web. Automatically research uncertain problems, present options, wait for user approval. 支持中文/English.",
+      "version": "1.0.0",
+      "author": {
+        "name": "张宇 (zyu51)"
+      },
+      "source": "./plugins/auto-research",
+      "category": "ai-tools",
+      "tags": ["research", "chatgpt", "playwright", "browser-automation", "decision-support"],
+      "keywords": ["research", "chatgpt", "playwright", "automation", "browser", "decision", "中文"]
+    },
+    {
       "name": "switch-provider",
       "description": "Switch Claude Code between AI providers (Anthropic, Z.AI, Kimi, MiniMax) with a single command",
       "version": "1.0.0",

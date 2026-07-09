@@ -1,0 +1,28 @@
+{
+  "name": "auto-research",
+  "description": "自动研究技能：触发词 ? 自动询问 ChatGPT，?? 搜索引擎调研，遇到不确定的问题自动研究后呈现方案等用户裁决",
+  "version": "1.0.0",
+  "author": {
+    "name": "张宇",
+    "email": "zyu51@example.com"
+  },
+  "license": "MIT",
+  "category": "ai-tools",
+  "keywords": [
+    "research",
+    "chatgpt",
+    "playwright",
+    "automation",
+    "decision-support",
+    "中文"
+  ],
+  "mcpServers": {
+    "playwright": {
+      "description": "用于通过浏览器扩展连接 Edge/Chrome 自动操作 ChatGPT",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--extension", "--browser", "msedge"],
+      "env": {},
+      "required": true
+    }
+  }
+}
