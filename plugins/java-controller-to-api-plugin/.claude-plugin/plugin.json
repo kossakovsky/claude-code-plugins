@@ -1,0 +1,10 @@
+{
+  "name": "java-controller-to-api-plugin",
+  "version": "0.1.0",
+  "description": "Generate frontend TypeScript API modules from Java Spring Controllers — single-file output with routes, HTTP methods, typed params/results, and JSDoc from Swagger annotations.",
+  "author": {
+    "name": "gk7261234"
+  },
+  "license": "MIT",
+  "keywords": ["java", "spring", "typescript", "api", "codegen", "speckit"]
+}
