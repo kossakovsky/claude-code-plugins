@@ -1,0 +1,5 @@
+# Plugin local settings (user-specific configuration)
+.claude/*.local.md
+
+# OS files
+.DS_Store
